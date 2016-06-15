@@ -1,0 +1,62 @@
+---
+
+spark_download_base_url: "http://archive.apache.org/dist/spark/"
+hadoop_vars:
+  "1":
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-1.2.1/hadoop-1.2.1.tar.gz"
+    archived_name: "hadoop-1.2.1.tar.gz"
+    folder_name:  "hadoop-1.2.1"
+    suffix: "hadoop1"
+    swift_lib_url: False
+    swift_lib_name: False
+  "2.3":
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.3.0/hadoop-2.3.0.tar.gz"
+    archived_name: "hadoop-2.3.0.tar.gz"
+    folder_name:  "hadoop-2.3.0"
+    suffix: "hadoop2.3"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.3.0/hadoop-openstack-2.3.0.jar"
+    swift_lib_name: "hadoop-openstack-2.3.0.jar"
+  "2.4":
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.4.1/hadoop-2.4.1.tar.gz"
+    archived_name: "hadoop-2.4.1.tar.gz"
+    folder_name:  "hadoop-2.4.1"
+    suffix: "hadoop2.4"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.4.1/hadoop-openstack-2.4.1.jar"
+    swift_lib_name: "hadoop-openstack-2.4.1.jar"
+  "2.6":
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.6.4/hadoop-2.6.4.tar.gz"
+    archived_name: "hadoop-2.6.4.tar.gz"
+    folder_name: "hadoop-2.6.4"
+    suffix: "hadoop2.6"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.6.4/hadoop-openstack-2.6.4.jar"
+    swift_lib_name: "hadoop-openstack-2.6.4.jar"
+  "cdh4":
+    url: "https://archive.cloudera.com/cdh4/cdh/4/hadoop-2.0.0-cdh4.7.1.tar.gz"
+    archived_name: "hadoop-2.0.0-cdh4.7.1.tar.gz"
+    folder_name: "hadoop-2.0.0-cdh4.7.1"
+    suffix: "cdh4"
+    swift_lib_url: False
+    swift_lib_name: False
+
+
+spark_download_url: "{{ spark_download_base_url }}spark-{{ spark_version }}/spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}.tgz"
+spark_arch: "files/spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}.tgz"
+spark_file: "spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}"
+
+hadoop_download_url: "{{ hadoop_vars[hadoop_version]['url'] }}"
+hadoop_arch: "files/{{ hadoop_vars[hadoop_version]['archived_name'] }}"
+hadoop_file: "{{ hadoop_vars[hadoop_version]['folder_name'] }}"
+
+swift_download_url: "{{ hadoop_vars[hadoop_version]['swift_lib_url'] }}"
+swift_lib: "files/{{ hadoop_vars[hadoop_version]['swift_lib_name'] }}"
+swift_lib_destination: "/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/{{ hadoop_vars[hadoop_version]['swift_lib_name'] }}"
+
+hadoop_user: ubuntu
+do_prepare: False
+
+ephemeral_hdfs: "/usr/local/{{ hadoop_file }}"
+#FIXME: undefined vars for scripts
+spark_local_dirs: TODO
+spark_master_opts: TODO
+spark_worker_instances: TODO
+

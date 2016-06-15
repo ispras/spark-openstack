@@ -1,0 +1,22 @@
+{
+ "display_name": "PySpark {{python_version}}",
+ "language": "python",
+ "argv": [
+  "/usr/bin/python{{python_version}}",
+  "-m",
+  "ipykernel",
+  "-f",
+  "{connection_file}"
+ ],
+ "env": {
+  "SPARK_HOME": "/opt/spark/",
+  "PYTHONPATH": "/opt/spark/python/:/opt/spark/python/lib/py4j-0.9-src.zip",
+  "PYTHONSTARTUP": "/opt/spark/python/pyspark/shell.py",
+  "PYSPARK_SUBMIT_ARGS": "{% if spark_packages is defined %}--packages {{spark_packages|join(',')}} {% endif %}pyspark-shell",
+  "PYSPARK_PYTHON": "/usr/bin/python{{python_version}}"
+  {% if python_version == 3 %},
+  "PYSPARK_DRIVER_PYTHON": "ipython3",
+  "PYSPARK_DRIVER_PYTHON_OPTS": "notebook"
+  {% endif %}
+ }
+}

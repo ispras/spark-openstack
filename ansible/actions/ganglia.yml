@@ -1,0 +1,30 @@
+- hosts: "{{ cluster_name }}_master"
+  tasks:
+    - set_fact:
+        is_master: True
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  roles:
+    - ganglia
+    - { role: ganglia_master, when: is_master|default(False) }
+  post_tasks:
+    - service: name=ganglia-monitor state=restarted
+      become: true
+      become_user: root
+      when: is_master|default(False)
+
+    - service: name=ganglia-monitor state=restarted
+      become: true
+      become_user: root
+      when: not is_master|default(False)
+
+    - service: name=gmetad state=restarted
+      become: true
+      become_user: root
+      when: is_master|default(False)
+
+    - service: name=apache2 state=restarted
+      become: true
+      become_user: root
+      when: is_master|default(False)
+

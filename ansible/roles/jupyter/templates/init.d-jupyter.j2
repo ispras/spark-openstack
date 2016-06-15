@@ -1,0 +1,60 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        {{ jupyter_service_name }}
+# Required-Start:  $network $remote_fs $syslog
+# Required-Stop:   $network $remote_fs $syslog
+# Default-Start:   2 3 4 5
+# Default-Stop:    1
+# Short-Description: Start NTP daemon
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin/
+
+. /lib/lsb/init-functions
+
+DAEMON="`which jupyter`"
+PIDFILE=/var/run/{{ jupyter_service_name }}.pid
+
+RUNASUSER={{ hadoop_user }}
+UGID=$(getent passwd $RUNASUSER | cut -f 3,4 -d:) || true
+
+case $1 in
+	start)
+		log_daemon_msg "Starting Jupyter notebook" "{{ jupyter_service_name }}"
+		if [ -z "$UGID" ]; then
+			log_failure_msg "user \"$RUNASUSER\" does not exist"
+			exit 1
+		fi
+  		start-stop-daemon --start --quiet --oknodo --make-pidfile --pidfile $PIDFILE --background --chuid $RUNASUSER --chdir /home/{{hadoop_user}} \
+  							--startas /bin/bash -- -c "exec $DAEMON notebook --no-browser > /home/{{hadoop_user}}/{{ jupyter_service_name }}.log 2>&1"
+		status=$?
+		log_end_msg $status
+  		;;
+	stop)
+		log_daemon_msg "Stopping Jupyter notebook" "{{ jupyter_service_name }}"
+  		start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+		log_end_msg $?
+		rm -f $PIDFILE
+  		;;
+	restart|force-reload)
+		$0 stop && sleep 2 && $0 start
+  		;;
+	try-restart)
+		if $0 status >/dev/null; then
+			$0 restart
+		else
+			exit 0
+		fi
+		;;
+	reload)
+		exit 3
+		;;
+	status)
+		status_of_proc $DAEMON "Jupyter notebook"
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|try-restart|force-reload|status}"
+		exit 2
+		;;
+esac

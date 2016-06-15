@@ -1,0 +1,5 @@
+#!/bin/bash
+
+cd "`dirname $0`/ansible"
+python ./spark_openstack_cmd.py $@
+

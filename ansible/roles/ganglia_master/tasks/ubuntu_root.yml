@@ -1,0 +1,16 @@
+---
+
+- apt: update_cache=yes cache_valid_time=86400
+
+- name: install packages
+  apt: name={{ item }} state=present
+  with_items:
+    - rrdtool
+    - gmetad
+    - ganglia-webfrontend
+    - apache2
+
+- copy: src=/etc/ganglia-webfrontend/apache.conf dest=/etc/apache2/sites-available/ganglia.conf remote_src=yes
+- command: a2ensite ganglia.conf
+
+- template: src=gmetad.conf.j2 dest=/etc/ganglia/gmetad.conf

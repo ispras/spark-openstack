@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<!-- Put site-specific property overrides in this file. -->
+
+<configuration>
+    <property>
+        <name>io.file.buffer.size</name>
+        <value>65536</value>
+    </property>
+
+
+    <property>
+        <name>dfs.client.read.shortcircuit</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.client.read.shortcircuit.skip.checksum</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.domain.socket.path</name>
+        <value>/var/run/hadoop-hdfs/dn._PORT</value>
+    </property>
+
+    <property>
+        <name>dfs.client.file-block-storage-locations.timeout</name>
+        <value>3000</value>
+    </property>
+
+    <property>
+        <name>fs.tachyon.impl</name>
+        <value>tachyon.hadoop.TFS</value>
+    </property>
+
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/mnt/hdfs</value>
+    </property>
+
+    <property>
+        <name>fs.defaultFS</name>
+        <value>file:///</value>
+    </property>
+
+    <property>
+        <name>fs.default.name</name>
+        <value>file:///</value>
+    </property>
+
+<!-- Swift specific stuff -->
+
+    <property>
+        <name>fs.swift.impl</name>
+        <value>org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem</value>
+    </property>
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.auth.url</name>
+        <value>{{ os_auth_url }}/tokens</value>
+    </property>
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.http.port</name>
+        <value>8080</value>
+    </property>
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.region</name>
+        <value>{{ os_region_name | default("RegionOne") }}</value>
+    </property>
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.public</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.tenant</name>
+        <value>computations</value>
+    </property>
+
+{% if os_swift_username is defined and os_swift_username is defined %}
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.username</name>
+        <value>{{ os_swift_username }}</value>
+    </property>
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.password</name>
+        <value>{{ os_swift_password }}</value>
+    </property>
+{% else %}
+<!-- You should pass username and password. Commented out because you didn't provide
+    swift-user or swift-password parameter.
+
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.username</name>
+        <value>YOUR OPENSTACK USERNAME</value>
+    </property>
+    <property>
+        <name>fs.swift.service.{{ os_project_name }}.password</name>
+        <value>YOUR OPENSTACK PASSWORD</value>
+    </property>
+-->
+{% endif %}
+
+</configuration>

@@ -1,0 +1,3 @@
+active_master: "{{ cluster_name }}-master"
+active_master_ip: "{{ hostvars[groups[cluster_name + '_master'][0]].openstack.private_v4 }}"
+active_master_inventory_hostname: "{{ hostvars[groups[cluster_name + '_master'][0]].inventory_hostname }}"

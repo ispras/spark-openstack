@@ -1,0 +1,26 @@
+---
+
+- hosts: localhost
+  roles:
+    - { role: spark_common, just_import: True }
+  tasks:
+    - name: get Spark distro
+      get_url: url={{ spark_download_url }} dest={{ spark_arch }}
+    - name: get Hadoop distro
+      get_url: url={{ hadoop_download_url }} dest={{ hadoop_arch }}
+    - name: get Swift library (for Hadoop 2.3/2.4/2.6)
+      get_url: url={{ swift_download_url }} dest={{ swift_lib }}
+      when: "{{ hadoop_version }} == 2.3 or {{ hadoop_version }} == 2.4 or {{ hadoop_version }} == 2.6"
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  sudo: yes
+  roles:
+    - spark_common
+    - { role: mountnfs, when: nfs_share }
+
+- hosts: "{{ cluster_name }}_master"
+  roles:
+    - spark_master
+    - { role: jupyter, install_as_service: True, when: deploy_jupyter }
+    - { role: jupyter, python_version: 3, when: deploy_jupyter }
+    - { role: jupyterhub, when: deploy_jupyter }

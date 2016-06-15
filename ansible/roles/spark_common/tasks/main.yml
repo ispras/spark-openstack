@@ -1,0 +1,13 @@
+---
+
+- include: tasks/prepare_ubuntu.yml
+  when: spark_common_completed is undefined and just_import is undefined and not skip_spark_setup|default(False)
+
+- include: as_root.yml
+  become: yes
+  become_user: root
+  when: spark_common_completed is undefined and just_import is undefined and not skip_spark_setup|default(False)
+
+- set_fact:
+    spark_common_completed: true
+

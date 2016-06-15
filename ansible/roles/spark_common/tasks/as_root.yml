@@ -1,0 +1,32 @@
+---
+
+#TODO: move to tasks/prepare_ubuntu.yml
+- name: set user and priviliges on spark
+  file: path=/opt/{{ spark_file }} owner={{ hadoop_user }} group=hadoop recurse=yes
+
+- name: distribute hadoop conf
+  template: src=templates/hadoop-env.sh.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hadoop-env.sh
+
+- name: distribute hadoop core-site.xml
+  template: src=templates/hadoop-core-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/core-site.xml
+
+- name: distribute hadoop hdfs-site.xml
+  template: src=templates/hdfs-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hdfs-site.xml
+
+- name: deploy slaves configuration
+  template: src=templates/slaves.j2 dest=/opt/{{ spark_file }}/conf/slaves
+
+- name: deploy spark-env.sh configuration
+  template: src=templates/spark-env.sh.j2 dest=/opt/{{ spark_file }}/conf/spark-env.sh owner={{ hadoop_user }} group=hadoop
+
+- name: distribute spark core-site.xml
+  template: src=templates/spark-core-site.xml.j2 dest=/opt/{{ spark_file }}/conf/core-site.xml
+
+- name: deploy spark-defaults.conf configuration
+  template: src=templates/spark/conf/spark-defaults.conf.j2 dest=/opt/{{ spark_file }}/conf/spark-defaults.conf owner={{ hadoop_user }} group=hadoop
+
+- name: deploy copy-dir.sh
+  copy: src=files/copy-dir.sh dest=/home/{{ hadoop_user }}/copy-dir.sh owner={{ hadoop_user }} group=hadoop mode="ugo=rx"
+
+- name: create dir for hdfs
+  file: path=/mnt/hdfs state=directory mode=0755 owner={{ hadoop_user }}
