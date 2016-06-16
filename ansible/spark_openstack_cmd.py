@@ -50,7 +50,7 @@ parser.add_argument("-m", "--master-instance-type", help="master instance type, 
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
 parser.add_argument("--spark-worker-mem", help="force worker memory value (e.g. 14001m)")
-parser.add_argument("-j", "--deploy-jupyter", default=True, help="Should we deploy jupyter on master node.")
+parser.add_argument("-j", "--deploy-jupyter", default=False, help="Should we deploy jupyter on master node.")
 parser.add_argument("--spark-version", default="1.6.1", help="Spark version to use")
 parser.add_argument("--hadoop-version", help="Hadoop version to use")
 parser.add_argument("--boot-from-volume", default=False, help="Should the cluster be based on Cinder volumes. "
@@ -196,7 +196,8 @@ def get_slave_cpus(master_ip):
 if args.action == "launch":
     subprocess.call([ansible_playbook_cmd, "create.yml", "--extra-vars", repr(make_extra_vars())])
     extra_vars = make_extra_vars()
-    subprocess.call(["./openstack_inventory.py", "--refresh", "--list"]) # refresh openstack cache
+    with open(os.devnull, "w") as devnull:
+        subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
     subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
     master_ip = get_master_ip()
     #get rid of 'Warning: Permanently added ...' stuff

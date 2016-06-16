@@ -19,9 +19,7 @@ export SPARK_SUBMIT_LIBRARY_PATH="$SPARK_SUBMIT_LIBRARY_PATH:{{ephemeral_hdfs}}/
 export SPARK_SUBMIT_CLASSPATH="$SPARK_CLASSPATH:$SPARK_SUBMIT_CLASSPATH:$HADOOP_CONF_DIR:{{ephemeral_hdfs}}/share"
 
 # Bind Spark's web UIs to this machine's public EC2 hostname otherwise fallback to private IP:
-export SPARK_PUBLIC_DNS=`
-wget -q -O - http://169.254.169.254/latest/meta-data/public-hostname ||\
-wget -q -O - http://169.254.169.254/latest/meta-data/local-ipv4`
+export SPARK_PUBLIC_DNS=`wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4`
 
 # Used for YARN model
 export YARN_CONF_DIR="{{ephemeral_hdfs}}/etc/hadoop/"

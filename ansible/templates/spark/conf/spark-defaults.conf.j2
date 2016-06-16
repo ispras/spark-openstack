@@ -9,6 +9,8 @@ spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/
 {% endif %}
 
 spark.master    spark://{{ active_master_ip }}:7077
+spark.eventLog.enabled true
+spark.eventLog.dir /tmp/
 
 # for spark version < 1.4.0
 spark.tachyonStore.url tachyon://{{ active_master_ip }}:19998

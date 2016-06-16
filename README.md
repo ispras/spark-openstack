@@ -220,14 +220,15 @@ Supported actions:
 ## Tested configurations
 
 Ansible: 2.0.2
+
 Python: 2.7.*
+
 Management machine OS: Mac OS X Yosemite, Linux Mint 17, Kubuntu 14.04
 
 ## Known issues
 
 * No Openstack security groups support for now. So if your Openstack environment uses it, cluster will not work correctly.
 * You may notice a role named jupyterhub - it's senseless to use for now.
-* You will see that links in Spark WebUI are broken since they use instances hostnames instead of floating IPs
 * Only Ubuntu 14.04 is supported for now as guest system
 
 ## TODO Roadmap (you are welcome to contribute)
