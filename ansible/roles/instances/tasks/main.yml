@@ -1,0 +1,3 @@
+---
+
+- include: "{{action + '_' + sync}}.yml"

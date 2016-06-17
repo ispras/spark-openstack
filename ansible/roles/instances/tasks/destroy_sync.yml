@@ -1,0 +1,23 @@
+---
+
+- name: destroy security group
+  include: destroy_security_group.yml
+
+- name: acknowledge existing servers
+  os_server_facts:
+
+- name: debug
+  set_fact: alive_servers="{{ alive_servers | default([]) | union([item.name]) }}"
+  when: item['metadata']['group'] is defined and (cluster_name + '_master' == item['metadata']['group'] or cluster_name + '_slaves' == item['metadata']['group'])
+  with_items: "{{ openstack_servers }}"
+  no_log: True
+
+- debug: var=alive_servers
+
+
+- name: destroy master
+  os_server:
+    state: absent
+    name: "{{ item }}"
+  with_items: "{{ alive_servers }}"
+  retries: 3

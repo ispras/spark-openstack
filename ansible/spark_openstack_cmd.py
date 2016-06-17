@@ -66,6 +66,8 @@ parser.add_argument("--swift-password", help="Username for Swift object storage.
 parser.add_argument("--nfs-share", default=False, help="Should we mount some NFS share on instances")
 parser.add_argument("--nfs-share-path", help="Path to NFS share")
 parser.add_argument("--nfs-share-mnt", help="Where to mount NFS share")
+parser.add_argument("--async-operations", default=False,
+                    help="Async Openstack operations (may not work with some Openstack environments)")
 
 args = parser.parse_args()
 if args.master_instance_type is None:
@@ -84,7 +86,7 @@ if args.ansible_bin is not None:
 
 def make_extra_vars():
     extra_vars = dict()
-    extra_vars["instance_state"] = "present"
+    extra_vars["action"] = args.action
     extra_vars["n_slaves"] = args.slaves
     extra_vars["cluster_name"] = args.cluster_name
     extra_vars["os_image"] = args.image_id
@@ -216,7 +218,6 @@ elif args.action == "destroy":
     print("FIXME: setting slaves = " + str(nslaves))
     args.slaves = nslaves
     extra_vars = make_extra_vars()
-    extra_vars["instance_state"] = "absent"
     res = subprocess.call([ansible_playbook_cmd, "create.yml", "--extra-vars", repr(extra_vars)])
 elif args.action == "get-master":
     print(get_master_ip())

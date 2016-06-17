@@ -1,0 +1,7 @@
+---
+
+- name: create security group
+  os_security_group:
+    state: present
+    name: "{{ cluster_name }}"
+    description: "Security group for Spark cluster + {{ cluster_name }}"

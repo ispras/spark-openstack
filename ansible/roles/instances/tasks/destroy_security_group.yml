@@ -1,0 +1,7 @@
+---
+
+- name: destroy security group
+  os_security_group:
+    state: absent
+    name: "{{ cluster_name }}"
+    description: "Security group for Spark cluster + {{ cluster_name }}"

@@ -1,0 +1,33 @@
+---
+
+- name: initialize security group
+  include: create_security_group.yml
+
+- name: create master
+  os_server:
+    state: present
+    name: "{{ cluster_name }}-master"
+    image: "{{ os_image }}"
+    flavor: "{{ master_flavor }}"
+    key_name: "{{ os_key_name }}"
+    floating_ip_pools: "{{ floating_ip_pool }}"
+    network: "{{ virtual_network }}"
+    boot_from_volume: "{{ boot_from_volume }}"
+    security_groups: "{{ cluster_name }}"
+    meta: "hostname={{ cluster_name }}-master,group={{ cluster_name }}_master"
+  retries: 3
+
+- name: create slaves
+  os_server:
+    state: present
+    name: "{{ item }}"
+    image: "{{ os_image }}"
+    flavor: "{{ flavor }}"
+    key_name: "{{ os_key_name }}"
+    floating_ip_pools: "{{ floating_ip_pool }}"
+    network: "{{ virtual_network }}"
+    boot_from_volume: "{{ boot_from_volume }}"
+    security_groups: "{{ cluster_name }}"
+    meta: "hostname={{ item }},group={{ cluster_name }}_slaves"
+  with_sequence: start=1 end={{ n_slaves }} format={{ cluster_name }}-slave-%d
+  retries: 3
