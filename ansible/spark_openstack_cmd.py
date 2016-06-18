@@ -30,11 +30,11 @@ spark_versions = \
 
 parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Openstack.',
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
-                                 epilog='Usage example:\t'
-                                        './spark-openstack -k key_name -i ~/.ssh/id_rsa -s 10 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -f public_pool launch spark-cluster'
-                                        './spark-openstack -k key_name -i ~/.ssh/id_rsa -s 10 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -f public_pool  destroy spark-cluster'
-                                        'Look through README.md for more advanced usage examples.'
-                                        'Apache 2.0, ISP RAS 2016.')
+                                 epilog='Usage real-life examples:\t\n'
+                                        '   ./spark-openstack -k borisenko -i ~/.ssh/id_rsa -s 2 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -n computations-net -f external_network launch spark-cluster\n'
+                                        '   ./spark-openstack destroy spark-cluster\n'
+                                        'Look through README.md for more advanced usage examples.\n'
+                                        'Apache 2.0, ISP RAS 2016.\n')
 
 parser.add_argument('action', type=str,
                     choices=["launch", "destroy", "get-master", "config"])
@@ -133,6 +133,8 @@ def make_extra_vars():
     extra_vars["nfs_share"] = args.nfs_share
     extra_vars["nfs_share_path"] = args.nfs_share_path
     extra_vars["nfs_share_mnt"] = args.nfs_share_mnt
+
+    extra_vars["sync"] = "async" if args.async_operations else "sync"
 
     return extra_vars
 

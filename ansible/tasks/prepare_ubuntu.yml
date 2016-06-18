@@ -29,10 +29,14 @@
 - name: create hadoop user
   user: name={{ hadoop_user }} comment="Hadoop user" group=hadoop shell=/bin/bash
 
-- name: put hadoop distro to master
-  #get_url: url="{{ hadoop_url }}" dest=/usr/local/
-  copy: src={{ hadoop_arch }} dest=/usr/local/
+- name: get Hadoop distro
+  get_url: url={{ hadoop_download_url }} dest=/usr/local/
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
+
+#- name: put hadoop distro to master
+#  #get_url: url="{{ hadoop_url }}" dest=/usr/local/
+#  copy: src={{ hadoop_arch }} dest=/usr/local/
+#  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
 
 - name: distribute hadoop among slaves
   synchronize:
@@ -46,9 +50,8 @@
 - name: create hadoop symlink
   file: src=/usr/local/{{ hadoop_file }} dest=/usr/local/hadoop state=link
 
-
 - name: put needed swift library
-  copy: src={{ swift_lib }} dest=/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/
+  get_url: url={{ swift_download_url }} dest=/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/
   when: "{{ hadoop_version }} == 2.3 or {{ hadoop_version }} == 2.4 or {{ hadoop_version }} == 2.6"
 
 #- name: remove hadoop archive
@@ -57,9 +60,13 @@
 - name: set user and priviliges on hadoop
   file: path=/usr/local/{{ hadoop_file }} owner={{ hadoop_user }} group=hadoop recurse=yes
 
-- name: put spark distro to master
-  copy: src={{ spark_arch }} dest=/opt/
+- name: get Spark distro
+  get_url: url={{ spark_download_url }} dest=/opt/
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
+
+#- name: put spark distro to master
+#  copy: src={{ spark_arch }} dest=/opt/
+#  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
 
 - name: distribute spark distro among slaves
   synchronize:
