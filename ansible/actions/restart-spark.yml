@@ -1,28 +1,18 @@
 ---
 
 - hosts: "{{ cluster_name }}_master"
-  #become: true
-  #become_user: root
-  roles:
-    - { role: spark_common, skip_spark_setup: True }
   tasks:
     - command: /opt/spark/sbin/stop-slaves.sh
     - command: /opt/spark/sbin/stop-master.sh
-    - command: /usr/local/{{ hadoop_file }}/sbin/stop-dfs.sh
+    - command: /usr/local/hadoop/sbin/stop-dfs.sh
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
-  #become: true
-  #become_user: root
   tasks:
     - command: killall -9 java
       ignore_errors: yes
 
 - hosts: "{{ cluster_name }}_master"
-  #become: true
-  #become_user: root
-  roles:
-    - { role: spark_common, skip_spark_setup: True }
   tasks:
-    - command: /usr/local/{{ hadoop_file }}/sbin/start-dfs.sh
+    - command: /usr/local/hadoop/sbin/start-dfs.sh
     - command: /opt/spark/sbin/start-master.sh
     - command: /opt/spark/sbin/start-slaves.sh

@@ -8,23 +8,18 @@
     - ganglia
     - { role: ganglia_master, when: is_master|default(False) }
   post_tasks:
-    - service: name=ganglia-monitor state=restarted
-      become: true
-      become_user: root
-      when: is_master|default(False)
+    - block:
+      - service: name=ganglia-monitor state=restarted
+        when: is_master|default(False)
 
-    - service: name=ganglia-monitor state=restarted
-      become: true
-      become_user: root
-      when: not is_master|default(False)
+      - service: name=ganglia-monitor state=restarted
+        when: not is_master|default(False)
 
-    - service: name=gmetad state=restarted
-      become: true
-      become_user: root
-      when: is_master|default(False)
+      - service: name=gmetad state=restarted
+        when: is_master|default(False)
 
-    - service: name=apache2 state=restarted
+      - service: name=apache2 state=restarted
+        when: is_master|default(False)
       become: true
       become_user: root
-      when: is_master|default(False)
 

@@ -2,19 +2,15 @@
 
 - name: distribute hadoop masters file
   template: src=templates/masters.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/masters
-  when: not skip_spark_setup|default(False)
 
 - name: distribute hadoop slaves file
   template: src=templates/slaves.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/slaves
-  when: not skip_spark_setup|default(False)
 
 - name: format hdfs (unless it's already been done)
   command: /usr/local/{{ hadoop_file }}/bin/hadoop namenode -format creates=/usr/local/{{ hadoop_file }}/ansible-format-hdfs
-  when: not skip_spark_setup|default(False)
 
 - name: touch hfds formatted file (indicates if hdfs has been formatted)
   file: state=touch path=/usr/local/{{ hadoop_file }}/ansible-format-hdfs
-  when: not skip_spark_setup|default(False)
 
 - name: add hadoop and spark binaries to path for hadoop user
   lineinfile:
@@ -22,28 +18,21 @@
     state=present insertafter=EOF
     line="export PATH=$PATH:/usr/local/{{ hadoop_file }}/bin/:/opt/{{ spark_file }}/bin/"
     create=true
-  when: not skip_spark_setup|default(False)
 
 - name: stop hadoop (if running)
   command: /usr/local/{{ hadoop_file }}/sbin/stop-dfs.sh
-  when: not skip_spark_setup|default(False)
 
 - name: start hadoop
   command: /usr/local/{{ hadoop_file }}/sbin/start-dfs.sh
-  when: not skip_spark_setup|default(False)
 
 - name: stop spark master (if running)
   command: /opt/{{ spark_file }}/sbin/stop-master.sh
-  when: not skip_spark_setup|default(False)
 
 - name: start spark master
   shell: SPARK_MASTER_IP="{{ cluster_name }}-master" /opt/{{ spark_file }}/sbin/start-master.sh
-  when: not skip_spark_setup|default(False)
 
 - name: stop the slaves (if running)
   shell: /opt/{{ spark_file }}/sbin/stop-slaves.sh
-  when: not skip_spark_setup|default(False)
 
 - name: start the slaves
   shell: /opt/{{ spark_file }}/sbin/start-slaves.sh
-  when: not skip_spark_setup|default(False)

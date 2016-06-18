@@ -3,51 +3,49 @@
 #FIXME: need full path to be included directly
 - include_vars: "{{roles_dir|default('roles')}}/jupyter/vars/python{{ python_version }}.yml"
 
-- name: update apt cache
-  sudo: yes
-  apt: update_cache=yes
+- block:
+  - name: update apt cache
+    apt: update_cache=yes
 
-- name: install packages
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-    - "{{apt_pkg_pref}}-pip"
-    - "{{apt_pkg_pref}}-dev"
-    - "{{apt_pkg_pref}}-tk" #needed for pyspark
-    - "{{apt_pkg_pref}}-scipy"
-    - libfreetype6-dev
-    - libpng12-dev
-    - pkg-config
-  register: result
-  ignore_errors: True
-  until: result|success
-  retries: 3
-  #TODO: failures are ignored
+  - name: install packages
+    apt: name={{ item }} state=present
+    with_items:
+      - "{{apt_pkg_pref}}-pip"
+      - "{{apt_pkg_pref}}-dev"
+      - "{{apt_pkg_pref}}-tk" #needed for pyspark
+      - "{{apt_pkg_pref}}-scipy"
+      - libfreetype6-dev
+      - libpng12-dev
+      - pkg-config
+    register: result
+    ignore_errors: True
+    until: result|success
+    retries: 3
+    #TODO: failures are ignored
 
-  #looks like pyparsing==2.1.2 does not work on python 3 (AttributeError: 'tuple' object has no attribute 'filename')
-  #as a result of this matplotlib does not work either
-- name: install pyparsing
-  sudo: yes
-  pip: name=pyparsing version=2.1.1 state=present executable=pip{{ python_version }}
-  when: python_version|int == 3
+    #looks like pyparsing==2.1.2 does not work on python 3 (AttributeError: 'tuple' object has no attribute 'filename')
+    #as a result of this matplotlib does not work either
+  - name: install pyparsing
+    pip: name=pyparsing version=2.1.1 state=present executable=pip{{ python_version }}
+    when: python_version|int == 3
 
-- name: install pip packages
-  sudo: yes
-  pip: name={{ item }} state=present executable=pip{{ python_version }}
-  with_items:
-    - jupyter
-    - numpy
-    - pandas
-    - matplotlib
-    - scipy
-    - seaborn
-    - scikit-learn
-  register: result
-  ignore_errors: True
-  until: result|success
-  retries: 3
-  #TODO: failures are ignored
+  - name: install pip packages
+    pip: name={{ item }} state=present executable=pip{{ python_version }}
+    with_items:
+      - jupyter
+      - numpy
+      - pandas
+      - matplotlib
+      - scipy
+      - seaborn
+      - scikit-learn
+    register: result
+    ignore_errors: True
+    until: result|success
+    retries: 3
+    #TODO: failures are ignored
 
-- name: install toree
-  sudo: yes
-  pip: name=toree state=present executable=pip{{ python_version }} extra_args="--pre"
+  - name: install toree
+    pip: name=toree state=present executable=pip{{ python_version }} extra_args="--pre"
+  become: True
+  become_user: root
