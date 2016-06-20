@@ -5,6 +5,12 @@
     - name: create directory for ssh-keys if doesn't exist
       file: path=files/keys state=directory
 
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  gather_facts: no
+  tasks:
+    - name: install python 2
+      raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+
 - hosts: "{{ cluster_name }}_master"
   tasks:
     - name: generating key for hadoop user

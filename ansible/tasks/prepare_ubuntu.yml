@@ -5,11 +5,15 @@
   retries: 2
 
 - name: install packages
-  apt: name={{ item }} state=present
-  with_items:
-    - openjdk-7-jre
-    - dstat
-    - rsync
+  package: name={{ item }} state=present
+  with_items: "{{ ubuntu_14_04_packages }}"
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15
+
+- name: install packages
+  package: name={{ item }} state=present
+  with_items: "{{ ubuntu_16_04_packages }}"
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15
+
 
 - name: disable net.ipv6.conf.all.disable_ipv6
   sysctl: name=net.ipv6.conf.all.disable_ipv6 value=1 state=present
@@ -82,3 +86,7 @@
 
 - name: create spark symlink
   file: src=/opt/{{ spark_file }} dest=/opt/spark state=link
+
+
+- name: create spark symlink
+  file: src=/opt/{{ spark_file }} dest=/usr/local/spark state=link

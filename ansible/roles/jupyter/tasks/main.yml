@@ -3,10 +3,6 @@
 - include: prepare.yml
   when: not skip_install|default(False)
 
-- name: create spark symlink
-  sudo: yes
-  file: src={{ spark_home }} dest=/usr/local/spark state=link
-
 - name: setup toree
   sudo: yes
   shell: jupyter toree install
@@ -34,6 +30,9 @@
 - name: download scala
   shell: wget http://www.scala-lang.org/files/archive/scala-2.10.4.deb
   when: not skip_install|default(False)
+
+- name: get dependancies
+  package: name=libjansi-java state=present
 
 - name: do magic
   sudo: yes
