@@ -8,9 +8,8 @@
     apt: update_cache=yes
 
   - name: install packages
-    apt: name={{ item }} state=present
+    package: name={{ item }} state=present
     with_items:
-      - "{{apt_pkg_pref}}-pip"
       - "{{apt_pkg_pref}}-dev"
       - "{{apt_pkg_pref}}-tk" #needed for pyspark
       - "{{apt_pkg_pref}}-scipy"
@@ -22,6 +21,16 @@
     until: result|success
     retries: 3
     #TODO: failures are ignored
+
+  - name: get pip sources with checksum check
+    get_url:
+      url="https://pypi.python.org/packages/e7/a8/7556133689add8d1a54c0b14aeff0acb03c64707ce100ecd53934da1aa13/pip-8.1.2.tar.gz#md5=87083c0b9867963b29f7aba3613e8f4a"
+      dest=/tmp/
+      checksum=md5:87083c0b9867963b29f7aba3613e8f4a
+  - name: unpack pip sources
+    unarchive: src=/tmp/pip-8.1.2.tar.gz dest=/tmp/ copy=no
+  - name: install pip
+    raw: "{{apt_pkg_pref}} /tmp/pip-8.1.2/setup.py install"
 
     #looks like pyparsing==2.1.2 does not work on python 3 (AttributeError: 'tuple' object has no attribute 'filename')
     #as a result of this matplotlib does not work either

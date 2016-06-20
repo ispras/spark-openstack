@@ -130,6 +130,7 @@ def make_extra_vars():
         del extra_vars["os_swift_password"]
 
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
+    extra_vars["deploy_jupyterhub"] = False
     extra_vars["nfs_share"] = args.nfs_share
     extra_vars["nfs_share_path"] = args.nfs_share_path
     extra_vars["nfs_share_mnt"] = args.nfs_share_mnt
