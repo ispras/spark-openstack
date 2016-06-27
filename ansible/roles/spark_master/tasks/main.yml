@@ -19,11 +19,19 @@
     line="export PATH=$PATH:/usr/local/{{ hadoop_file }}/bin/:/opt/{{ spark_file }}/bin/"
     create=true
 
-- name: stop hadoop (if running)
+- name: stop hdfs (if running)
   command: /usr/local/{{ hadoop_file }}/sbin/stop-dfs.sh
 
-- name: start hadoop
+- name: start hdfs
   command: /usr/local/{{ hadoop_file }}/sbin/start-dfs.sh
+
+- name: stop yarn (if running)
+  command: /usr/local/{{ hadoop_file }}/sbin/stop-yarn.sh
+  when: on_yarn
+
+- name: start yarn
+  command: /usr/local/{{ hadoop_file }}/sbin/start-yarn.sh
+  when: on_yarn
 
 - name: stop spark master (if running)
   command: /opt/{{ spark_file }}/sbin/stop-master.sh

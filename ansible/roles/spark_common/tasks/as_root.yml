@@ -13,14 +13,14 @@
 - name: distribute hadoop hdfs-site.xml
   template: src=templates/hdfs-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hdfs-site.xml
 
+- name: distribute hadoop yarn-site.xml
+  template: src=templates/yarn-site.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/yarn-site.xml
+
 - name: deploy slaves configuration
   template: src=templates/slaves.j2 dest=/opt/{{ spark_file }}/conf/slaves
 
 - name: deploy spark-env.sh configuration
   template: src=templates/spark-env.sh.j2 dest=/opt/{{ spark_file }}/conf/spark-env.sh owner={{ hadoop_user }} group=hadoop
-
-- name: distribute spark core-site.xml
-  template: src=templates/spark-core-site.xml.j2 dest=/opt/{{ spark_file }}/conf/core-site.xml
 
 - name: deploy spark-defaults.conf configuration
   template: src=templates/spark/conf/spark-defaults.conf.j2 dest=/opt/{{ spark_file }}/conf/spark-defaults.conf owner={{ hadoop_user }} group=hadoop
