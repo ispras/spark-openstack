@@ -14,7 +14,7 @@
   template: src=templates/hdfs-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hdfs-site.xml
 
 - name: distribute hadoop yarn-site.xml
-  template: src=templates/yarn-site.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/yarn-site.xml
+  template: src=templates/yarn-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/yarn-site.xml
 
 - name: deploy slaves configuration
   template: src=templates/slaves.j2 dest=/opt/{{ spark_file }}/conf/slaves
