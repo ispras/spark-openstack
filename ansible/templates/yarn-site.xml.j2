@@ -13,9 +13,14 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
+
 <configuration>
+
+{% if on_yarn %}
     <property>
         <name>yarn.resourcemanager.hostname</name>
         <value>{{ active_master }}</value>
     </property>
+{% endif %}
+
 </configuration>

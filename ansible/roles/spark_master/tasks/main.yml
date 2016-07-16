@@ -44,3 +44,19 @@
 
 - name: start the slaves
   shell: /opt/{{ spark_file }}/sbin/start-slaves.sh
+
+- name: create hdfs user directory
+  command: /usr/local/{{ hadoop_file }}/bin/hdfs dfs -mkdir -p /user/spark/applicationHistory
+  when: on_yarn
+
+- name: set owner for spark hdfs directory
+  command: /usr/local/{{ hadoop_file }}/bin/hdfs dfs -chown -R {{ hadoop_user }} /user
+  when: on_yarn
+
+- name: change access attributes for history directory
+  command: /usr/local/{{ hadoop_file }}/bin/hdfs dfs -chmod 1777 /user/spark/applicationHistory
+  when: on_yarn
+
+- name: start history server
+  shell: /opt/{{ spark_file }}/sbin/start-history-server.sh
+  when: on_yarn

@@ -8,7 +8,7 @@
   template: src=templates/hadoop-env.sh.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hadoop-env.sh
 
 - name: distribute hadoop core-site.xml
-  template: src=templates/hadoop-core-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/core-site.xml
+  template: src=templates/core-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/core-site.xml
 
 - name: distribute hadoop hdfs-site.xml
   template: src=templates/hdfs-site.xml.j2 dest=/usr/local/{{ hadoop_file }}/etc/hadoop/hdfs-site.xml

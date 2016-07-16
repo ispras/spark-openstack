@@ -3,7 +3,12 @@
 
 <!-- Put site-specific property overrides in this file. -->
 
+
+
 <configuration>
+
+{% if on_yarn %}
+
     <property>
         <name>hadoop.tmp.dir</name>
         <value>/mnt/hdfs</value>
@@ -18,6 +23,56 @@
         <name>fs.default.name</name>
         <value>hdfs://{{ active_master }}:9000</value>
     </property>
+
+{% else %}
+
+    <property>
+        <name>io.file.buffer.size</name>
+        <value>65536</value>
+    </property>
+
+
+    <property>
+        <name>dfs.client.read.shortcircuit</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.client.read.shortcircuit.skip.checksum</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>dfs.domain.socket.path</name>
+        <value>/var/run/hadoop-hdfs/dn._PORT</value>
+    </property>
+
+    <property>
+        <name>dfs.client.file-block-storage-locations.timeout</name>
+        <value>3000</value>
+    </property>
+
+    <property>
+        <name>fs.tachyon.impl</name>
+        <value>tachyon.hadoop.TFS</value>
+    </property>
+
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/mnt/hdfs</value>
+    </property>
+
+    <property>
+        <name>fs.defaultFS</name>
+        <value>file:///</value>
+    </property>
+
+    <property>
+        <name>fs.default.name</name>
+        <value>file:///</value>
+    </property>
+
+{% endif %}
 
 <!-- Swift specific stuff -->
 
