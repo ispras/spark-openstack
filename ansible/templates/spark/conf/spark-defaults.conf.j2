@@ -2,10 +2,10 @@ spark.executor.memory   {{spark_worker_mem}}
 spark.executor.extraLibraryPath {{ephemeral_hdfs}}/lib/native/
 
 {% if hadoop_version == "2.6" or hadoop_version == "2.4" or hadoop_version == "2.3" %}
-spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/:{{swift_lib_destination}}
-spark.driver.extraClassPath {{swift_lib_destination}}
+spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/:{{swift_lib_destination}}{{spark_extra_jars_list}}
+spark.driver.extraClassPath {{swift_lib_destination}}{{spark_extra_jars_list}}
 {% else %}
-spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/
+spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/{{spark_extra_jars_list}}
 {% endif %}
 
 spark.master    spark://{{ active_master_ip }}:7077

@@ -60,3 +60,5 @@ spark_local_dirs: TODO
 spark_master_opts: TODO
 spark_worker_instances: TODO
 
+spark_extra_jars_dir: "/opt/{{spark_file}}/lib_extra"
+spark_extra_jars_list: "{% for jar in extra_jars|default([]) %}:{{spark_extra_jars_dir}}/{{jar.name}}{% endfor %}"
