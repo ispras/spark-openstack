@@ -66,6 +66,7 @@ parser.add_argument("--swift-password", help="Username for Swift object storage.
 parser.add_argument("--nfs-share", default=False, help="Should we mount some NFS share on instances")
 parser.add_argument("--nfs-share-path", help="Path to NFS share")
 parser.add_argument("--nfs-share-mnt", help="Where to mount NFS share")
+parser.add_argument("--extra-jars", action="append", help="Add/replace extra jars to Spark (during launch). Jar file names must be different")
 parser.add_argument("--async-operations", default=False,
                     help="Async Openstack operations (may not work with some Openstack environments)")
 
@@ -136,6 +137,20 @@ def make_extra_vars():
     extra_vars["nfs_share_mnt"] = args.nfs_share_mnt
 
     extra_vars["sync"] = "async" if args.async_operations else "sync"
+
+    if args.extra_jars is None:
+        args.extra_jars = []
+
+    extra_jars = list()
+    def add_jar(path):
+        extra_jars.append({"name": os.path.basename(path), "path": os.path.abspath(path)})
+    for jar in args.extra_jars:
+        if os.path.isdir(jar):
+            for f in os.listdir(jar):
+                add_jar(os.path.join(jar, f))
+        else:
+            add_jar(jar)
+    extra_vars["extra_jars"] = extra_jars
 
     return extra_vars
 

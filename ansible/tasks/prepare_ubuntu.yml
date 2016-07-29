@@ -87,6 +87,12 @@
 - name: create spark symlink
   file: src=/opt/{{ spark_file }} dest=/opt/spark state=link
 
-
 - name: create spark symlink
   file: src=/opt/{{ spark_file }} dest=/usr/local/spark state=link
+
+- name: create extra jars directory
+  file: path={{ spark_extra_jars_dir }} owner={{ hadoop_user }} group=hadoop state=directory
+
+- name: copy extra jars
+  copy: src={{item.path}} dest={{ spark_extra_jars_dir }}/{{item.name}} owner={{ hadoop_user }} group=hadoop mode=0644
+  with_items: "{{extra_jars}}"
