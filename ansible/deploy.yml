@@ -5,7 +5,7 @@
   become_user: root
   roles:
     - spark_common
-    - { role: mountnfs, when: nfs_share }
+    - mountnfs
 
 - hosts: "{{ cluster_name }}_master"
   roles:

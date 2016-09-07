@@ -169,18 +169,19 @@ Then open `<master-ip>:8888` in a browser. Using two Spark kernels at the same t
 Nfs mount
 =========
 
-You may want to mount some NFS share on all the servers in your cluster. You should provide the following optional
-arguments:
+You may want to mount some NFS shares on all the servers in your cluster. To do so you should provide the following
+optional arguments:
 
-    * `--nfs-share True 
-    * `--nfs-share-path <share-path>` address of NFS share (e.g. '1.1.1.1:/share/')
-    * `--nfs-share-mnt <where-to-mount>` path in your cluster machines where the share will be mounted (e.g. /mnt/share)
+    --nfs-share <share-path> <where-to-mount>
+    
+Where `<share-path>` is the address of NFS share (e.g. `1.1.1.1:/share/`) and
+`<where-to-mount>` is the path in your cluster machines where the share will be mounted (e.g. `/mnt/share`)
     
 Usage example:
 
     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
-               --nfs-share True --nfs-share-path 1.1.1.1:/share/ --nfs-share-mnt /mnt/share \
+               --nfs-share 1.1.1.1:/share/ /mnt/share \
                launch borisenko-cluster
 
 
