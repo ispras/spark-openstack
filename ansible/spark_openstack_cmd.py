@@ -63,9 +63,9 @@ parser.add_argument("--swift-username", help="Username for Swift object storage.
 parser.add_argument("--swift-password", help="Username for Swift object storage. If not specified, swift integration "
                                              "is commented out in core-site.xml. You can also use OS_SWIFT_PASSWORD"
                                              "environment variable")
-parser.add_argument("--nfs-share", default=False, help="Should we mount some NFS share on instances")
-parser.add_argument("--nfs-share-path", help="Path to NFS share")
-parser.add_argument("--nfs-share-mnt", help="Where to mount NFS share")
+parser.add_argument("--nfs-share", default=[], nargs=2, metavar=("<nfs-path>", "<mount-path>"),
+                    help="Should we mount some NFS share(s) on instances",
+                    action='append')
 parser.add_argument("--extra-jars", action="append", help="Add/replace extra jars to Spark (during launch). Jar file names must be different")
 parser.add_argument("--async-operations", default=False,
                     help="Async Openstack operations (may not work with some Openstack environments)")
@@ -132,9 +132,7 @@ def make_extra_vars():
 
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
     extra_vars["deploy_jupyterhub"] = False
-    extra_vars["nfs_share"] = args.nfs_share
-    extra_vars["nfs_share_path"] = args.nfs_share_path
-    extra_vars["nfs_share_mnt"] = args.nfs_share_mnt
+    extra_vars["nfs_shares"] = map(lambda l: {"nfs_path": l[0], "mount_path": l[1]}, args.nfs_share)
 
     extra_vars["sync"] = "async" if args.async_operations else "sync"
 

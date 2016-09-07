@@ -1,0 +1,11 @@
+---
+
+- name: create dir
+  file: path={{item.mount_path}} state=directory owner={{nfs_user}}
+
+- name: crate mount point
+  lineinfile:
+    dest=/etc/fstab
+    state=present insertafter=EOF
+    line="{{ item.nfs_path }}  {{item.mount_path}}       nfs    owner={{nfs_user}}        0       2"
+    create=true

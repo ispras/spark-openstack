@@ -9,15 +9,8 @@
     - nfs-kernel-server
     - nfs-common
 
-- name: create dir
-  file: path={{nfs_share_mnt}} state=directory owner={{nfs_user}}
-
-- name: crate mount point
-  lineinfile:
-    dest=/etc/fstab
-    state=present insertafter=EOF
-    line="{{ nfs_share_path }}  {{nfs_share_mnt}}       nfs    owner={{nfs_user}}        0       2"
-    create=true
+- include: add_share.yml
+  with_items: "{{nfs_shares}}"
 
 - name: mount
   shell: mount -a
