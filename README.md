@@ -82,9 +82,9 @@ Running
     
     * `--spark-version <version>` use specific Spark version. Default is 1.6.1.
     * `--hadoop-version <version>` use specific Hadoop version for Spark. Default is the latest supported in Spark.
-    * `--spark-worker-mem <mem>` don't auto-detect spark worker memory and use specified value, can be useful if other
+    * `--spark-worker-mem-mb <mem>` don't auto-detect spark worker memory and use specified value, can be useful if other
         processes on slave nodes (e.g. python) need more memory, default for 10Gb-20Gb RAM slaves is to leave 2Gb to
-        system/other processes; example: `--spark-worker-mem 10g`
+        system/other processes; example: `--spark-worker-mem-mb 10240`
     * `--spark-master-instance-type <instance-type>` use another instance flavor for master
     
     Example:
