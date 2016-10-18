@@ -49,7 +49,7 @@ parser.add_argument("-t", "--instance-type")
 parser.add_argument("-m", "--master-instance-type", help="master instance type, defaults to same as slave instance type")
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
-parser.add_argument("--spark-worker-mem", help="force worker memory value (e.g. 14001m)")
+parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
 parser.add_argument("-j", "--deploy-jupyter", default=False, help="Should we deploy jupyter on master node.")
 parser.add_argument("--spark-version", default="1.6.1", help="Spark version to use")
 parser.add_argument("--hadoop-version", help="Hadoop version to use")
@@ -67,6 +67,11 @@ parser.add_argument("--nfs-share", default=[], nargs=2, metavar=("<nfs-path>", "
                     help="Should we mount some NFS share(s) on instances",
                     action='append')
 parser.add_argument("--extra-jars", action="append", help="Add/replace extra jars to Spark (during launch). Jar file names must be different")
+
+parser.add_argument("--deploy-ignite", action='store_true', help="Should we deploy Apache Ignite.")
+parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage of Spark worker memory to be given to Apache Ignite.")
+parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
+
 parser.add_argument("--async-operations", default=False,
                     help="Async Openstack operations (may not work with some Openstack environments)")
 
@@ -150,6 +155,9 @@ def make_extra_vars():
             add_jar(jar)
     extra_vars["extra_jars"] = extra_jars
 
+    extra_vars["deploy_ignite"] = args.deploy_ignite
+    extra_vars["ignite_version"] = args.ignite_version
+
     return extra_vars
 
 
@@ -187,8 +195,8 @@ def ssh_first_slave(master_ip, cmd):
     return ssh_output(master_ip, "ssh %s-slave-1 '%s'" % (args.cluster_name, cmd.replace("'", "'\\''")))
 
 #FIXME: copied from https://github.com/amplab/spark-ec2/blob/branch-1.5/deploy_templates.py
-def get_worker_mem(master_ip):
-    if args.spark_worker_mem is not None:
+def get_worker_mem_mb(master_ip):
+    if args.spark_worker_mem_mb is not None:
         return args.spark_worker_mem
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
     slave_ram_kb = int(ssh_first_slave(master_ip, mem_command))
@@ -206,7 +214,7 @@ def get_worker_mem(master_ip):
         slave_ram_mb = slave_ram_mb - 2 * 1024 # Leave 2 GB RAM
     else:
         slave_ram_mb = max(512, slave_ram_mb - 1300) # Leave 1.3 GB RAM
-    return "%sm" % slave_ram_mb
+    return slave_ram_mb
 
 def get_slave_cpus(master_ip):
     return int(ssh_first_slave(master_ip, "nproc"))
@@ -220,7 +228,14 @@ if args.action == "launch":
     master_ip = get_master_ip()
     #get rid of 'Warning: Permanently added ...' stuff
     ssh_first_slave(master_ip, "echo 1")
-    extra_vars["spark_worker_mem"] = get_worker_mem(master_ip)
+    if not args.deploy_ignite:
+        extra_vars["spark_worker_mem_mb"] = get_worker_mem_mb(master_ip)
+    else:
+        worker_mem_mb = get_worker_mem_mb(master_ip)
+        ignite_mem_ratio = args.ignite_memory/100.0
+        #FIXME: improve rounding
+        extra_vars["spark_worker_mem_mb"] = int(worker_mem_mb*(1-ignite_mem_ratio))
+        extra_vars["ignite_mem_mb"] = int(worker_mem_mb*ignite_mem_ratio)
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
     #TODO: check that instances were actually created, otherwise don't deploy and return with error msg
     subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])

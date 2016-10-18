@@ -4,7 +4,9 @@
   become: yes
   become_user: root
   roles:
+    - { role: ignite_prepare, when: deploy_ignite }
     - spark_common
+    - { role: ignite_config, when: deploy_ignite }
     - mountnfs
 
 - hosts: "{{ cluster_name }}_master"

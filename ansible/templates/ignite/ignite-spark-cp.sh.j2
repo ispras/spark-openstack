@@ -1,0 +1,16 @@
+#!/bin/bash
+#based on https://apacheignite-fs.readme.io/docs/installation-deployment
+
+# Optionally set IGNITE_HOME here.
+IGNITE_HOME="{{ ignite_home }}"
+
+IGNITE_LIBS="${IGNITE_HOME}/libs/*"
+
+for file in ${IGNITE_HOME}/libs/*
+do
+if [ -d ${file} ] && [ "${file}" != "${IGNITE_HOME}"/libs/optional ]; then
+IGNITE_LIBS=${IGNITE_LIBS}:${file}/*
+fi
+done
+
+echo $IGNITE_LIBS
