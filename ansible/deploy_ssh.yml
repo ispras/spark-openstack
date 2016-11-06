@@ -7,8 +7,21 @@
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   gather_facts: no
+  any_errors_fatal: true
   tasks:
-    - name: install python 2
+    - name: Wait for ssh-server to start
+      local_action:
+        module: wait_for
+          host="{{ hostvars[inventory_hostname].openstack.public_v4 }}"
+          port=22
+          search_regex=OpenSSH
+          delay=3
+          timeout=300
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  gather_facts: no
+  tasks:
+    - name: install Python 2 if missing
       raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
 
 - hosts: "{{ cluster_name }}_master"

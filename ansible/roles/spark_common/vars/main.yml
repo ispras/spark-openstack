@@ -30,6 +30,13 @@ hadoop_vars:
     suffix: "hadoop2.6"
     swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.6.4/hadoop-openstack-2.6.4.jar"
     swift_lib_name: "hadoop-openstack-2.6.4.jar"
+  "2.7":
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
+    archived_name: "hadoop-2.7.3.tar.gz"
+    folder_name: "hadoop-2.7.3"
+    suffix: "hadoop2.7"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.7.3/hadoop-openstack-2.7.3.jar"
+    swift_lib_name: "hadoop-openstack-2.7.3.jar"
   "cdh4":
     url: "https://archive.cloudera.com/cdh4/cdh/4/hadoop-2.0.0-cdh4.7.1.tar.gz"
     archived_name: "hadoop-2.0.0-cdh4.7.1.tar.gz"
