@@ -9,6 +9,8 @@ import os
 
 spark_versions = \
     {
+        "2.0.1": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
+        "2.0.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "1.6.2": {"hadoop_versions": ["1", "cdh4", "2.3", "2.4", "2.6"]},
         "1.6.1": {"hadoop_versions": ["1", "cdh4", "2.3", "2.4", "2.6"]},
         "1.6.0": {"hadoop_versions": ["1", "cdh4", "2.3", "2.4", "2.6"]},
@@ -35,7 +37,7 @@ parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Ope
                                         '   ./spark-openstack -k borisenko -i ~/.ssh/id_rsa -s 2 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -n computations-net -f external_network launch spark-cluster\n'
                                         '   ./spark-openstack destroy spark-cluster\n'
                                         'Look through README.md for more advanced usage examples.\n'
-                                        'Apache 2.0, ISP RAS 2016.\n')
+                                        'Apache 2.0, ISP RAS 2016 (http://ispras.ru/en).\n')
 
 parser.add_argument('action', type=str,
                     choices=["launch", "destroy", "get-master", "config"])
@@ -52,7 +54,7 @@ parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
 parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
 parser.add_argument("-j", "--deploy-jupyter", default=False, help="Should we deploy jupyter on master node.")
-parser.add_argument("--spark-version", default="1.6.1", help="Spark version to use")
+parser.add_argument("--spark-version", default="1.6.2", help="Spark version to use")
 parser.add_argument("--hadoop-version", help="Hadoop version to use")
 parser.add_argument("--boot-from-volume", default=False, help="Should the cluster be based on Cinder volumes. "
                                                               "Use it wisely")
@@ -225,7 +227,12 @@ if args.action == "launch":
     extra_vars = make_extra_vars()
     with open(os.devnull, "w") as devnull:
         subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
-    subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+    initial_setup_status = subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+    if initial_setup_status != 0:
+        print("One of your instances didn't come up; please do the following:")
+        print("    1. Check your instances states in your Openstack dashboard; if there are any in ERROR state, terminate them")
+        print("    2. Rerun the script (no need for destroy; it will continue working skipping the work already done)")
+        exit(initial_setup_status)
     master_ip = get_master_ip()
     #get rid of 'Warning: Permanently added ...' stuff
     ssh_first_slave(master_ip, "echo 1")
@@ -238,8 +245,8 @@ if args.action == "launch":
         extra_vars["spark_worker_mem_mb"] = int(worker_mem_mb*(1-ignite_mem_ratio))
         extra_vars["ignite_mem_mb"] = int(worker_mem_mb*ignite_mem_ratio)
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    #TODO: check that instances were actually created, otherwise don't deploy and return with error msg
     subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.action == "destroy":
     res = subprocess.check_output([ansible_cmd,
                                    "-i", "openstack_inventory.py",

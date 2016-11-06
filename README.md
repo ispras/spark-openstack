@@ -1,15 +1,19 @@
 # Spark cluster deploy tools for Openstack
 
-This project provides scripts for Spark cluster autodeploy in any Openstack environment with optional useful tools:
+This project provides scripts for Apache Spark cluster autodeploy in any Openstack environment with optional useful tools:
 
 * Openstack Swift seamless integration
+* Apache Hadoop
+* Apache Ignite
 * Jupyter
 * NFS share mounts
 * Ganglia
 
+Our tools do not need prebuilt images; you can just use vanilla ones. Supported distros are listed at the end of this page.
 
-Developed in [Institute for System Programming of the Russian Academy of Sciences](http://www.ispras.ru/en/) and
-distributed with Apache 2.0 license.
+All the versions of Apache Spark since 1.0 are supported; you are free to choose needed versions of Spark and Hadoop.
+
+Developed in [Institute for System Programming of the Russian Academy of Sciences](http://www.ispras.ru/en/) and distributed with Apache 2.0 license.
 
 You are welcome to contribute.
 
@@ -19,17 +23,17 @@ Installation
 
 1. Install ansible version >= 2.0.2 (2.0.1 has a bug in template engine).
 
-    Looks like openstack stuff in ansible will only work with python 2.7, so if ansible is already installed for python 3, it should be uninstalled first (e.g. `sudo pip3 uninstall ansible`).
+    It looks like Openstack stuff in Ansible will only work with Python 2.7, so if Ansible is already installed for Python 3, you should use virtual environment with Python 2 or be careful with your $PATH (path for Ansible for Python2 should be the first one) 
     
-    Old versions of packages can cause problems, in that case `pip --upgrade` could help (e.g. for ubuntu):
+    Old versions of packages can cause problems, in that case `pip --upgrade` could help (e.g. for Ubuntu):
 
         sudo apt-get install libffi-dev libssl-dev python-dev
-        sudo pip2 install --upgrade pip
-        sudo pip2 install --upgrade six ansible shade
+        pip install --upgrade pip
+        pip install --upgrade six ansible shade
         
     Also, for some weird reson, six should be installed with `easy_install` instead of `pip` on Mac OS in some cases ([issue on github](https://github.com/major/supernova/issues/55))
 
-    A sample list of package versions that works can be found in [pip-list.txt](pip-list.txt)
+    A sample list of all packages and their versions that works can be found in [pip-list.txt](pip-list.txt). Note: it's a result of pip freeze output for virtualenv; formally speaking we depend only on Ansible, six and shade: all the other packages are their dependencies.
 
 
 Configuration
@@ -217,26 +221,36 @@ Supported actions:
 
 * If any of actions fail after all instances are in active state, you can easily rerun the script and it will finish the work quite fast
 * If you have only one virtual network in your Openstack project you may not specify it in options, it will be picked up automatically  
+* You may see output for tasks that are actually weren't done (even errors like '{"failed": true, "msg": "'apt_pkg_pref' is undefined"}'). Do not worry please, the skipped tasks are really skipped and such behaviour is related to [this Ansible issue](https://github.com/ansible/ansible/issues/9034)
+* You should use cloud-ready images (e.g for Ubuntu they can be found at https://cloud-images.ubuntu.com/ )
 
 ## Tested configurations
 
-Ansible: 2.0.2
+Ansible: 2.0.2 and higher.
 
-Python: 2.7.*
+Python: 2.7.* (3.x should work as soon as Ansible Openstack modules would be fixed)
 
-Management machine OS: Mac OS X Yosemite, Linux Mint 17, Kubuntu 14.04
+Management machine OS: Mac OS X Yosemite, Linux Mint 17, Kubuntu 14.04, Windows+Cygwin
+
+Guest OS:
+
+* Ubuntu 14.04.1-5 (full coverage of all the functionality have been tested; recommended)
+* Ubuntu 16.04 (Spark+Hadoop functionality have been tested; other should work also but we didn't check)
+* Ubuntu 12.04 (Spark+Hadoop functionality have been tested; other should work also but we didn't check)
+
+
+* CentOS 6/7 are *unsupported for now* but it should be rather easy to implement, waiting for your pull or feature requests since we don't use it.
 
 ## Known issues
 
-* No Openstack security groups support for now. So if your Openstack environment uses it, cluster will not work correctly.
+* Limited support for security groups in Openstack. Current rules allow all the traffic ingress and egress.
 * You may notice a role named jupyterhub - it's senseless to use for now.
-* Only Ubuntu 14.04 is supported for now as guest system
 
 ## TODO Roadmap (you are welcome to contribute)
 
 * Text config file support to avoid specifying lots of cmd parameters
-* Openstack security groups support
+* Openstack security groups full support
 * Spark on YARN deploy mode
 * JupyterHUB support for Spark on YARN deploy mode
-* Async cluster creation/destruction as an option (it works unstable so it's disabled now)
-* More guest OS support (now only Ubuntu 14.04 is supported)
+* Async cluster creation/destruction as an option (it works unstable for now)
+* More guest OS support
