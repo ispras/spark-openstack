@@ -1,52 +1,100 @@
 ---
 
-  - name: create/destroy master
+  - name: initialize security group
+    include: create_security_group.yml
+
+  - name: Create master instance
     os_server:
-      state: "{{ instance_state }}"
+      state: present
       name: "{{ cluster_name }}-master"
       image: "{{ os_image }}"
       flavor: "{{ master_flavor }}"
       key_name: "{{ os_key_name }}"
-      floating_ip_pools: "{{ floating_ip_pool }}"
       network: "{{ virtual_network }}"
       boot_from_volume: "{{ boot_from_volume }}"
-      #security_groups: "{{ cluster_name }}-master"
+      security_groups: "{{ cluster_name }}"
+      auto_ip: False
       meta: "hostname={{ cluster_name }}-master,group={{ cluster_name }}_master"
     retries: 3
-#    async: 300
-#    poll: 0
-#    register: master_waitress
+    async: 300
+    poll: 0
+    register: master_waitress
 
-  - name: create/destroy slaves
+  - name: Create slave instances
     os_server:
-      state: "{{ instance_state }}"
+      state: present
       name: "{{ item }}"
       image: "{{ os_image }}"
       flavor: "{{ flavor }}"
       key_name: "{{ os_key_name }}"
-      floating_ip_pools: "{{ floating_ip_pool }}"
       network: "{{ virtual_network }}"
       boot_from_volume: "{{ boot_from_volume }}"
-      #security_groups: "{{ cluster_name }}-slaves"
+      security_groups: "{{ cluster_name }}"
+      auto_ip: False
       meta: "hostname={{ item }},group={{ cluster_name }}_slaves"
     with_sequence: start=1 end={{ n_slaves }} format={{ cluster_name }}-slave-%d
+    delay: 1
     retries: 3
+    async: 300
+    poll: 0
+    register: slave_waitress
 
-#   Async instances creation: it works but Openstack can not handle >10 simultinous queries
-#    async: 1000
-#    poll: 0
-#    register: slave_waitress
-#
-#  - name: 'Checking master started or dead'
-#    async_status: jid={{ master_waitress.ansible_job_id }}
-#    register: mstr
-#    until: mstr.finished
-#    retries: 30
-#
-#  - name: 'Checking slaves started or dead'
-#    async_status: jid={{ item.ansible_job_id }}
-#    register: slv
-#    until: slv.finished
-#    retries: 120
-#    with_items: "{{ slave_waitress.results }}"
+  - name: 'Checking master instance started'
+    async_status: jid={{ master_waitress.ansible_job_id }}
+    register: mstr
+    until: mstr.finished
+    retries: 60
+    delay: 5
+
+  - name: 'Checking slaves started'
+    async_status: jid={{ item.ansible_job_id }}
+    register: slv
+    until: slv.finished
+    retries: 60
+    delay: 5
+    with_items: "{{ slave_waitress.results }}"
+
+  - name: 'Acquiring floating IPs for master instance'
+    os_floating_ip:
+      state: present
+      reuse: yes
+      server: "{{ cluster_name }}-master"
+      network: "{{ floating_ip_pool }}"
+      wait: True
+      timeout: 60
+    delay: 1
+    retries: 3
+    async: 60
+    poll: 0
+    register: master_ip_waitress
+
+  - name: 'Acquiring floating IPs for slave instances'
+    os_floating_ip:
+      state: present
+      reuse: yes
+      server: "{{ item }}"
+      network: "{{ floating_ip_pool }}"
+      wait: True
+      timeout: 20
+    with_sequence: start=1 end={{ n_slaves }} format={{ cluster_name }}-slave-%d
+    retries: 3
+    delay: 1
+    async: 60
+    poll: 0
+    register: slave_ip_waitress
+
+  - name: 'Waiting for IP'
+    async_status: jid={{ master_ip_waitress.ansible_job_id }}
+    register: mstr
+    until: mstr.finished
+    retries: 60
+    delay: 1
+
+  - name: 'Waiting for IP'
+    async_status: jid={{ item.ansible_job_id }}
+    register: slv
+    until: slv.finished
+    retries: 60
+    delay: 1
+    with_items: "{{ slave_ip_waitress.results }}"
 

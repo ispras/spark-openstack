@@ -70,7 +70,7 @@ Running
         cd spark-openstack
         ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> \
            -t <instance-type> -a <os-image-id> -n <virtual-network> -f <floating-ip-pool> \
-           launch <cluster-name>
+           --async launch <cluster-name>
         
     replacing <xxx> with values of:
     
@@ -99,7 +99,7 @@ Running
 * To destroy a cluster, run
 
         ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> \
-           -t <instance-type> -a <os-image-id> destroy <cluster-name>
+           -t <instance-type> -a <os-image-id> --async destroy <cluster-name>
 
     all parameter values are same as for `launch` command
 
@@ -235,8 +235,8 @@ Management machine OS: Mac OS X Yosemite, Linux Mint 17, Kubuntu 14.04, Windows+
 Guest OS:
 
 * Ubuntu 14.04.1-5 (full coverage of all the functionality have been tested; recommended)
-* Ubuntu 16.04 (Spark+Hadoop functionality have been tested; other should work also but we didn't check)
-* Ubuntu 12.04 (Spark+Hadoop functionality have been tested; other should work also but we didn't check)
+* Ubuntu 16.04 (Spark+Hadoop functionality has been tested; other should work also but we didn't check)
+* Ubuntu 12.04 (Spark+Hadoop functionality has been tested; other should work also but we didn't check)
 
 
 * CentOS 6/7 are *unsupported for now* but it should be rather easy to implement, waiting for your pull or feature requests since we don't use it.
@@ -252,5 +252,4 @@ Guest OS:
 * Openstack security groups full support
 * Spark on YARN deploy mode
 * JupyterHUB support for Spark on YARN deploy mode
-* Async cluster creation/destruction as an option (it works unstable for now)
 * More guest OS support

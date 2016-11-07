@@ -5,6 +5,17 @@
     - name: create directory for ssh-keys if doesn't exist
       file: path=files/keys state=directory
 
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  gather_facts: no
+  any_errors_fatal: true
+  tasks:
+    - name: Check if instances really got floating IPs
+      when: hostvars[inventory_hostname].openstack.public_v4 == ''
+      fail: msg="One of the instances didn't get floating IP address"
+
+
+
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   gather_facts: no
   any_errors_fatal: true
@@ -17,12 +28,15 @@
           search_regex=OpenSSH
           delay=3
           timeout=300
+    - debug: msg="Checking ssh for {{ hostvars[inventory_hostname].openstack.public_v4 }}"
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   gather_facts: no
+  any_errors_fatal: true
   tasks:
     - name: install Python 2 if missing
       raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+      delay: 10
 
 - hosts: "{{ cluster_name }}_master"
   tasks:

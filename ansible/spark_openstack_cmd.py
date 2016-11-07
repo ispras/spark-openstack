@@ -34,8 +34,8 @@ spark_versions = \
 parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Openstack.',
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog='Usage real-life examples:\t\n'
-                                        '   ./spark-openstack -k borisenko -i ~/.ssh/id_rsa -s 2 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -n computations-net -f external_network launch spark-cluster\n'
-                                        '   ./spark-openstack destroy spark-cluster\n'
+                                        '   ./spark-openstack -k borisenko -i ~/.ssh/id_rsa -s 2 -t spark.large -a 20545e58-59de-4212-a83f-3703b31622cf -n computations-net -f external_network --async launch spark-cluster\n'
+                                        '   ./spark-openstack --async destroy spark-cluster\n'
                                         'Look through README.md for more advanced usage examples.\n'
                                         'Apache 2.0, ISP RAS 2016 (http://ispras.ru/en).\n')
 
@@ -75,7 +75,7 @@ parser.add_argument("--deploy-ignite", action='store_true', help="Should we depl
 parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage of Spark worker memory to be given to Apache Ignite.")
 parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
 
-parser.add_argument("--async-operations", default=False,
+parser.add_argument("--async", action="store_true",
                     help="Async Openstack operations (may not work with some Openstack environments)")
 
 args = parser.parse_args()
@@ -142,7 +142,7 @@ def make_extra_vars():
     extra_vars["deploy_jupyterhub"] = False
     extra_vars["nfs_shares"] = map(lambda l: {"nfs_path": l[0], "mount_path": l[1]}, args.nfs_share)
 
-    extra_vars["sync"] = "async" if args.async_operations else "sync"
+    extra_vars["sync"] = "async" if args.async else "sync"
 
     if args.extra_jars is None:
         args.extra_jars = []
@@ -253,9 +253,6 @@ elif args.action == "destroy":
                                    "--extra-vars", repr(make_extra_vars()),
                                    "-m", "debug", "-a", "var=groups['%s_slaves']" % args.cluster_name,
                                    args.cluster_name + "-master"])
-    nslaves = len(res.strip().split("\n")) - 4
-    print("FIXME: setting slaves = " + str(nslaves))
-    args.slaves = nslaves
     extra_vars = make_extra_vars()
     res = subprocess.call([ansible_playbook_cmd, "create.yml", "--extra-vars", repr(extra_vars)])
 elif args.action == "get-master":
