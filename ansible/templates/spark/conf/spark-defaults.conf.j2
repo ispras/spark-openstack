@@ -10,8 +10,21 @@ spark.driver.extraClassPath {{spark_extra_jars_list}}{{ignite_cp|default("")}}
 {% endif %}
 
 spark.master    spark://{{ active_master_ip }}:7077
+
+
+{% if on_yarn %}
+
+spark.eventLog.dir hdfs://{{ active_master }}:9000/user/spark/applicationHistory
+spark.history.fs.logDirectory hdfs://{{ active_master }}:9000/user/spark/applicationHistory
+spark.eventLog.enabled true
+spark.yarn.historyServer.address {{ active_master }}:18088
+
+{% else %}
+
 spark.eventLog.enabled true
 spark.eventLog.dir /tmp/
+
+{% endif %}
 
 # for spark version < 1.4.0
 spark.tachyonStore.url tachyon://{{ active_master_ip }}:19998

@@ -44,6 +44,7 @@ parser.add_argument('action', type=str,
 parser.add_argument('cluster_name', help="Name for your cluster")
 parser.add_argument('option', nargs='?')
 parser.add_argument('-k', '--key-pair')
+parser.add_argument('-y', '--on-yarn', default=False)
 parser.add_argument("-i", "--identity-file")
 parser.add_argument("-s", "--slaves", type=int)
 parser.add_argument("-n", "--virtual-network", help="Your virtual Openstack network id for cluster. If have only one network, you may not specify it")
@@ -97,6 +98,7 @@ def make_extra_vars():
     extra_vars = dict()
     extra_vars["action"] = args.action
     extra_vars["n_slaves"] = args.slaves
+    extra_vars["on_yarn"] = args.on_yarn
     extra_vars["cluster_name"] = args.cluster_name
     extra_vars["os_image"] = args.image_id
     extra_vars["os_key_name"] = args.key_pair

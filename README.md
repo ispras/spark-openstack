@@ -31,7 +31,7 @@ Installation
         pip install --upgrade pip
         pip install --upgrade six ansible shade
         
-    Also, for some weird reson, six should be installed with `easy_install` instead of `pip` on Mac OS in some cases ([issue on github](https://github.com/major/supernova/issues/55))
+    Also, for some weird reason, six should be installed with `easy_install` instead of `pip` on Mac OS in some cases ([issue on github](https://github.com/major/supernova/issues/55))
 
     A sample list of all packages and their versions that works can be found in [pip-list.txt](pip-list.txt). Note: it's a result of pip freeze output for virtualenv; formally speaking we depend only on Ansible, six and shade: all the other packages are their dependencies.
 
@@ -68,7 +68,7 @@ Running
 * To create a cluster, source your <project>-openrc.sh file and run
 
         cd spark-openstack
-        ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> \
+        ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> -y <on-yarn>\
            -t <instance-type> -a <os-image-id> -n <virtual-network> -f <floating-ip-pool> \
            --async launch <cluster-name>
         
@@ -81,6 +81,7 @@ Running
     * `<virtual-network>` - your virtual network name or ID (in Neutron or Nova-networking)
     * `<floating-ip-pool>` - floating IP pool name
     * `<cluster-name>` - name of the cluster (prefix 'surname' is a good practice)
+    * `<on-yarn>` - whether to use YARN as a cluster manager (default: False)
 
     Spark-specific optional arguments:
     
@@ -102,6 +103,7 @@ Running
            -t <instance-type> -a <os-image-id> --async destroy <cluster-name>
 
     all parameter values are same as for `launch` command
+    
 
 ## Optional goodies 
 
