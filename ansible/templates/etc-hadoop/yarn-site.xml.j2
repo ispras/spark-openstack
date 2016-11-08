@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<configuration>
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>{{ active_master }}</value>
+        <description>The hostname of the RM.</description>
+    </property>
+    <property>
+        <name>yarn.scheduler.maximum-allocation-mb</name>
+        <value>{{ ((spark_worker_mem_mb|int*11)/10)|int }}</value>
+        <description>Maximum limit of memory to allocate to each container request at the Resource Manager.</description>
+    </property>
+    <property>
+        <name>yarn.nodemanager.resource.memory-mb</name>
+        <value>{{ ((spark_worker_mem_mb|int*11)/10)|int if not is_master else ((yarn_master_mem_mb|int*11)/10)|int }}</value>
+        <description>Amount of physical memory, in MB, that can be allocated for containers.</description>
+    </property>
+    <property>
+        <name>yarn.nodemanager.webapp.address</name>
+        <value>{{ hostvars[inventory_hostname].openstack.public_v4 }}:8042</value>
+        <description>NM Webapp address.</description>
+    </property>
+    <property>
+        <name>yarn.nodemanager.address</name>
+        <value>{{ hostvars[inventory_hostname].openstack.public_v4 }}:0</value>
+        <description>The address of the container manager in the NM.</description>
+    </property>
+    <property>
+        <name>yarn.nodemanager.bind-host</name>
+        <value>{{ hostvars[inventory_hostname].openstack.private_v4 }}</value>
+        <description>The actual address the server will bind to. If this optional address is set, the RPC and webapp servers will bind to this address and the port specified in yarn.nodemanager.address and yarn.nodemanager.webapp.address, respectively. This is most useful for making NM listen to all interfaces by setting to 0.0.0.0. </description>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.webapp.address</name>
+        <value>{{ active_master_public_ip }}:8088</value>
+        <description>The http address of the RM web application.</description>
+    </property>
+    <property>
+        <name>yarn.resourcemanager.bind-host</name>
+        <value>{{ active_master_ip }}</value>
+        <description>The actual address the server will bind to. If this optional address is set, the RPC and webapp servers will bind to this address and the port specified in yarn.resourcemanager.address and yarn.resourcemanager.webapp.address, respectively. This is most useful for making RM listen to all interfaces by setting to 0.0.0.0. </description>
+    </property>
+</configuration>

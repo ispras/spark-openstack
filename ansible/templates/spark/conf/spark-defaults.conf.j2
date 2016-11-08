@@ -1,15 +1,15 @@
 spark.executor.memory   {{spark_worker_mem_mb}}m
-spark.executor.extraLibraryPath {{ephemeral_hdfs}}/lib/native/
+spark.executor.extraLibraryPath {{hadoop_home}}/lib/native/
 
 {% if hadoop_version == "2.6" or hadoop_version == "2.4" or hadoop_version == "2.3" %}
-spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/:{{swift_lib_destination}}{{spark_extra_jars_list}}{{ignite_cp|default("")}}
+spark.executor.extraClassPath   {{hadoop_home}}/etc/hadoop/:{{swift_lib_destination}}{{spark_extra_jars_list}}{{ignite_cp|default("")}}
 spark.driver.extraClassPath {{swift_lib_destination}}{{spark_extra_jars_list}}{{ignite_cp|default("")}}
 {% else %}
-spark.executor.extraClassPath   {{ephemeral_hdfs}}/etc/hadoop/{{spark_extra_jars_list}}{{ignite_cp|default("")}}
+spark.executor.extraClassPath   {{hadoop_home}}/etc/hadoop/:{{spark_extra_jars_list}}{{ignite_cp|default("")}}
 spark.driver.extraClassPath {{spark_extra_jars_list}}{{ignite_cp|default("")}}
 {% endif %}
 
-spark.master    spark://{{ active_master_ip }}:7077
+spark.master    {{  "spark://%s:7077" % active_master_ip if not use_yarn else "yarn" }}
 spark.eventLog.enabled true
 spark.eventLog.dir /tmp/
 

@@ -1,5 +1,7 @@
 active_master: "{{ cluster_name }}-master"
+master_group_name: "{{ cluster_name + '_master' }}"
 active_master_ip: "{{ hostvars[groups[cluster_name + '_master'][0]].openstack.private_v4 }}"
+active_master_public_ip: "{{ hostvars[groups[cluster_name + '_master'][0]].openstack.public_v4 }}"
 active_master_inventory_hostname: "{{ hostvars[groups[cluster_name + '_master'][0]].inventory_hostname }}"
 ubuntu_14_04_packages: ["openjdk-7-jre", "dstat", "rsync"]
 ubuntu_16_04_packages: ["openjdk-8-jre", "dstat", "rsync"]

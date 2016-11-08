@@ -1,0 +1,8 @@
+---
+
+- name: get use_yarn
+  shell: grep "{{active_master}}" "{{hadoop_home}}/etc/hadoop/yarn-site.xml"
+  ignore_errors: True
+  register: use_yarn_cmd_res
+- set_fact: use_yarn={{use_yarn_cmd_res.rc == 0}}
+- debug: msg="use_yarn={{use_yarn}}"

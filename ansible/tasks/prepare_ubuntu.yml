@@ -85,10 +85,10 @@
 #  file: path=/opt/{{ spark_file }}.tgz state=absent
 
 - name: create spark symlink
-  file: src=/opt/{{ spark_file }} dest=/opt/spark state=link
+  file: src={{ spark_home }} dest=/opt/spark state=link
 
 - name: create spark symlink
-  file: src=/opt/{{ spark_file }} dest=/usr/local/spark state=link
+  file: src={{ spark_home }} dest=/usr/local/spark state=link
 
 - name: create extra jars directory
   file: path={{ spark_extra_jars_dir }} owner={{ hadoop_user }} group=hadoop state=directory

@@ -75,6 +75,7 @@ parser.add_argument("--deploy-ignite", action='store_true', help="Should we depl
 parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage of Spark worker memory to be given to Apache Ignite.")
 parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
 
+parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--async", action="store_true",
                     help="Async Openstack operations (may not work with some Openstack environments)")
 
@@ -141,6 +142,8 @@ def make_extra_vars():
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
     extra_vars["deploy_jupyterhub"] = False
     extra_vars["nfs_shares"] = map(lambda l: {"nfs_path": l[0], "mount_path": l[1]}, args.nfs_share)
+
+    extra_vars["use_yarn"] = args.yarn
 
     extra_vars["sync"] = "async" if args.async else "sync"
 
@@ -219,6 +222,27 @@ def get_worker_mem_mb(master_ip):
         slave_ram_mb = max(512, slave_ram_mb - 1300) # Leave 1.3 GB RAM
     return slave_ram_mb
 
+
+def get_master_mem(master_ip):
+    mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
+    master_ram_kb = int(ssh_output(master_ip, mem_command))
+    master_ram_mb = master_ram_kb / 1024
+    # Leave some RAM for the OS, Hadoop daemons, and system caches
+    if master_ram_mb > 100*1024:
+        master_ram_mb = master_ram_mb - 15 * 1024 # Leave 15 GB RAM
+    elif master_ram_mb > 60*1024:
+        master_ram_mb = master_ram_mb - 10 * 1024 # Leave 10 GB RAM
+    elif master_ram_mb > 40*1024:
+        master_ram_mb = master_ram_mb - 6 * 1024 # Leave 6 GB RAM
+    elif master_ram_mb > 20*1024:
+        master_ram_mb = master_ram_mb - 3 * 1024 # Leave 3 GB RAM
+    elif master_ram_mb > 10*1024:
+        master_ram_mb = master_ram_mb - 2 * 1024 # Leave 2 GB RAM
+    else:
+        master_ram_mb = max(512, master_ram_mb - 1300) # Leave 1.3 GB RAM
+    return "%s" % master_ram_mb
+
+
 def get_slave_cpus(master_ip):
     return int(ssh_first_slave(master_ip, "nproc"))
 
@@ -234,16 +258,18 @@ if args.action == "launch":
         print("    2. Rerun the script (no need for destroy; it will continue working skipping the work already done)")
         exit(initial_setup_status)
     master_ip = get_master_ip()
-    #get rid of 'Warning: Permanently added ...' stuff
     ssh_first_slave(master_ip, "echo 1")
     if not args.deploy_ignite:
         extra_vars["spark_worker_mem_mb"] = get_worker_mem_mb(master_ip)
+        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
     else:
         worker_mem_mb = get_worker_mem_mb(master_ip)
         ignite_mem_ratio = args.ignite_memory/100.0
         #FIXME: improve rounding
         extra_vars["spark_worker_mem_mb"] = int(worker_mem_mb*(1-ignite_mem_ratio))
         extra_vars["ignite_mem_mb"] = int(worker_mem_mb*ignite_mem_ratio)
+        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
+
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
     subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
     print("Cluster launched successfully; Master IP is %s"%(master_ip))

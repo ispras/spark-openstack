@@ -1,3 +1,0 @@
----
-
-spark_home: /opt/{{ spark_file }}

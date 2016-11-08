@@ -1,0 +1,26 @@
+---
+
+- name: distribute hadoop masters file
+  template: src=templates/masters.j2 dest={{ hadoop_home }}/etc/hadoop/masters
+
+- name: distribute hadoop slaves file
+  template: src=templates/slaves.j2 dest={{ hadoop_home }}/etc/hadoop/slaves
+
+- name: format hdfs (unless it's already been done)
+  command: "{{ hadoop_home }}/bin/hadoop namenode -format"
+  args:
+    creates: "{{ hadoop_home }}/ansible-format-hdfs"
+
+- name: touch hfds formatted file (indicates if hdfs has been formatted)
+  file: state=touch path={{ hadoop_home }}/ansible-format-hdfs
+
+- name: add hadoop and spark binaries to path for hadoop user
+  lineinfile:
+    dest=/home/{{ hadoop_user }}/.bashrc
+    state=present insertafter=EOF
+    line="export PATH=$PATH:{{ hadoop_home }}/bin/:{{ spark_home }}/bin/"
+    create=true
+
+- include: tasks/stop_all.yml
+
+- include: tasks/start_all.yml

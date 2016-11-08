@@ -1,7 +1,7 @@
 127.0.0.1 localhost
 
 {% for host in groups[cluster_name +'_master']+groups[cluster_name +'_slaves'] %}
-{{ hostvars[host].openstack.private_v4 }}  {{ hostvars[host].openstack.name }}
+{{ hostvars[host].openstack.private_v4 }}  {{ hostvars[host].openstack.name }} {{ hostvars[host].openstack.name }}.
 {% endfor %}
 
 # The following lines are desirable for IPv6 capable hosts

@@ -10,19 +10,19 @@ export SPARK_LOCAL_DIRS="/tmp"
 #fi
 export SPARK_WORKER_CORES={{spark_worker_cores}}
 
-export HADOOP_HOME="{{ephemeral_hdfs}}/bin"
-export HADOOP_CONF_DIR="{{ephemeral_hdfs}}/etc/hadoop"
+export HADOOP_HOME="{{hadoop_home}}"
+export HADOOP_CONF_DIR="{{ hadoop_home }}/etc/hadoop"
 export SPARK_MASTER_IP="{{ active_master_ip }}"
 #export MASTER=`cat /root/spark-ec2/cluster-url`
 
-export SPARK_SUBMIT_LIBRARY_PATH="$SPARK_SUBMIT_LIBRARY_PATH:{{ephemeral_hdfs}}/lib/native/"
-export SPARK_SUBMIT_CLASSPATH="$SPARK_CLASSPATH:$SPARK_SUBMIT_CLASSPATH:$HADOOP_CONF_DIR:{{ephemeral_hdfs}}/share"
+export SPARK_SUBMIT_LIBRARY_PATH="$SPARK_SUBMIT_LIBRARY_PATH:{{hadoop_home}}/lib/native/"
+export SPARK_SUBMIT_CLASSPATH="$SPARK_CLASSPATH:$SPARK_SUBMIT_CLASSPATH:$HADOOP_CONF_DIR:{{hadoop_home}}/share"
 
 # Bind Spark's web UIs to this machine's public EC2 hostname otherwise fallback to private IP:
 export SPARK_PUBLIC_DNS=`wget -q -O - http://169.254.169.254/latest/meta-data/public-ipv4`
 
 # Used for YARN model
-export YARN_CONF_DIR="{{ephemeral_hdfs}}/etc/hadoop/"
+export YARN_CONF_DIR="{{hadoop_home}}/etc/hadoop/"
 
 # Set a high ulimit for large shuffles, only root can do this
 if [ $(id -u) == "0" ]
@@ -30,4 +30,4 @@ then
     ulimit -n 1000000
 fi
 
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:{{ ephemeral_hdfs }}/lib/native"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:{{ hadoop_home }}/lib/native"

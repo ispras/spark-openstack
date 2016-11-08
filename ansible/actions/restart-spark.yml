@@ -1,18 +1,26 @@
 ---
 
 - hosts: "{{ cluster_name }}_master"
+  roles:
+    - { role: spark_common, skip_spark_setup: True, detect_conf: True }
   tasks:
-    - command: /opt/spark/sbin/stop-slaves.sh
-    - command: /opt/spark/sbin/stop-master.sh
-    - command: /usr/local/hadoop/sbin/stop-dfs.sh
+    - include: ../tasks/stop_all.yml
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  vars:
+    clear_logs: False
   tasks:
-    - command: killall -9 java
+    - name: kill all java processes
+      command: killall -9 java
       ignore_errors: yes
 
+    - name: clear worker logs
+      shell: rm -rv /opt/spark/work/*
+      ignore_errors: True
+      when: clear_logs
+
 - hosts: "{{ cluster_name }}_master"
+  roles:
+    - { role: spark_common, skip_spark_setup: True, detect_conf: True }
   tasks:
-    - command: /usr/local/hadoop/sbin/start-dfs.sh
-    - command: /opt/spark/sbin/start-master.sh
-    - command: /opt/spark/sbin/start-slaves.sh
+    - include: ../tasks/start_all.yml

@@ -49,23 +49,29 @@ hadoop_vars:
 spark_download_url: "{{ spark_download_base_url }}spark-{{ spark_version }}/spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}.tgz"
 spark_arch: "files/spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}.tgz"
 spark_file: "spark-{{ spark_version }}-bin-{{ hadoop_vars[hadoop_version]['suffix'] }}"
+spark_home: "/opt/{{ spark_file }}"
 
 hadoop_download_url: "{{ hadoop_vars[hadoop_version]['url'] }}"
 hadoop_arch: "files/{{ hadoop_vars[hadoop_version]['archived_name'] }}"
 hadoop_file: "{{ hadoop_vars[hadoop_version]['folder_name'] }}"
+hadoop_home: "/usr/local/{{ hadoop_file }}"
 
 swift_download_url: "{{ hadoop_vars[hadoop_version]['swift_lib_url'] }}"
 swift_lib: "files/{{ hadoop_vars[hadoop_version]['swift_lib_name'] }}"
-swift_lib_destination: "/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/{{ hadoop_vars[hadoop_version]['swift_lib_name'] }}"
+swift_lib_destination: "{{ hadoop_home }}/share/hadoop/hdfs/lib/{{ hadoop_vars[hadoop_version]['swift_lib_name'] }}"
 
-hadoop_user: ubuntu
+hadoop_user: "{{ hadoop_user }}"
 do_prepare: False
+detect_conf: False
 
-ephemeral_hdfs: "/usr/local/{{ hadoop_file }}"
+is_master: "{{ inventory_hostname in groups[master_group_name] }}"
+
 #FIXME: undefined vars for scripts
 spark_local_dirs: TODO
 spark_master_opts: TODO
 spark_worker_instances: TODO
 
-spark_extra_jars_dir: "/opt/{{spark_file}}/lib_extra"
+spark_extra_jars_dir: "{{ spark_home }}/lib_extra"
 spark_extra_jars_list: "{% for jar in extra_jars|default([]) %}:{{spark_extra_jars_dir}}/{{jar.name}}{% endfor %}"
+
+use_yarn: False
