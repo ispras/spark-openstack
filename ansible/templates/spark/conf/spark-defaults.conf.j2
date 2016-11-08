@@ -13,6 +13,9 @@ spark.master    {{  "spark://%s:7077" % active_master_ip if not use_yarn else "y
 spark.eventLog.enabled true
 spark.eventLog.dir /tmp/
 
+# TODO: n_slaves*executor_per_slave - 1 for YARN, n_slaves - for standalone
+spark.executor.instances  {{ n_slaves }}
+
 # for spark version < 1.4.0
 spark.tachyonStore.url tachyon://{{ active_master_ip }}:19998
 # for spark version >= 1.4.0

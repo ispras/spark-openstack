@@ -23,9 +23,6 @@
 - name: deploy spark-env.sh configuration
   template: src=templates/spark-env.sh.j2 dest={{ spark_home }}/conf/spark-env.sh owner={{ hadoop_user }} group=hadoop
 
-- name: distribute spark core-site.xml
-  template: src=templates/spark-core-site.xml.j2 dest=/opt/{{ spark_file }}/conf/core-site.xml
-
 - name: deploy spark-defaults.conf configuration
   template: src=templates/spark/conf/spark-defaults.conf.j2 dest={{ spark_home }}/conf/spark-defaults.conf owner={{ hadoop_user }} group=hadoop
 
