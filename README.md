@@ -70,7 +70,7 @@ Running
         cd spark-openstack
         ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> \
            -t <instance-type> -a <os-image-id> -n <virtual-network> -f <floating-ip-pool> \
-           --async launch <cluster-name>
+           [--async] [--yarn] launch <cluster-name>
         
     replacing <xxx> with values of:
     
@@ -81,6 +81,8 @@ Running
     * `<virtual-network>` - your virtual network name or ID (in Neutron or Nova-networking)
     * `<floating-ip-pool>` - floating IP pool name
     * `<cluster-name>` - name of the cluster (prefix 'surname' is a good practice)
+    * `--async` - launch Openstack instances in async way (preferred, but can cause problems on Openstack before Kilo)
+    * `--yarn` - Spark-on-YARN deploy mode  (has overhead on memory so do not use it if you don't know why)
 
     Spark-specific optional arguments:
     
@@ -245,11 +247,11 @@ Guest OS:
 
 * Limited support for security groups in Openstack. Current rules allow all the traffic ingress and egress.
 * You may notice a role named jupyterhub - it's senseless to use for now.
+* Links to workers and in YARN web-interface are wrong if you don't have DNSaaS in your Openstack (it uses hostnames instead of public IPs) 
 
 ## TODO Roadmap (you are welcome to contribute)
 
 * Text config file support to avoid specifying lots of cmd parameters
 * Openstack security groups full support
-* Spark on YARN deploy mode
 * JupyterHUB support for Spark on YARN deploy mode
 * More guest OS support

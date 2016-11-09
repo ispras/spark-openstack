@@ -28,7 +28,7 @@
           search_regex=OpenSSH
           delay=3
           timeout=300
-    - debug: msg="Checking ssh for {{ hostvars[inventory_hostname].openstack.public_v4 }}"
+#    - debug: msg="Checking ssh for {{ hostvars[inventory_hostname].openstack.public_v4 }}"
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   gather_facts: no

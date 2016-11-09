@@ -271,7 +271,7 @@ if args.action == "launch":
         extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
 
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call([ansible_playbook_cmd, "-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.action == "destroy":
     res = subprocess.check_output([ansible_cmd,

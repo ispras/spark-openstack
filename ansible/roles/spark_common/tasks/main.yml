@@ -1,5 +1,26 @@
 ---
 
+- name: get Hadoop distro checksum
+  local_action: get_url url={{ hadoop_checksum_url }} dest=files/
+  become: false
+  when: "{{ hadoop_version }} != 'cdh4'"
+
+
+# it would be reasonable to use sha1 for crossplatform, but Spark doesn't provide sha1 checksum.
+- name: extract Hadoop checksum from file
+  set_fact: hadoop_md5="{{ lookup('file', hadoop_arch_checksum) | regex_search('.*MD5.*') | regex_replace('.*MD5 = (.*)', '\\1' ) |  replace(' ', '') }}"
+  when: "{{ hadoop_version }} != 'cdh4'"
+
+- name: get Spark distro checksum
+  local_action: get_url url={{ spark_checksum_url }} dest=files/
+  become: false
+
+# it would be reasonable to use sha1 for crossplatform, but Spark doesn't provide sha1 checksum.
+- name: extract Spark distro checksum from file
+  set_fact: spark_md5="{{ lookup('file', spark_arch_checksum) | regex_replace('.*tgz:(.*)', '\\1' ) |  replace(' ', '') }}"
+
+- debug: var=spark_md5
+
 - include: tasks/prepare_ubuntu.yml
   when: spark_common_completed is undefined
 
