@@ -203,6 +203,39 @@ val parquetFile = sqlContext.read.parquet("/mnt/nfs_share/test.parquet")
 parquetFile.count
 ```
 
+Apache Ignite
+=============
+
+You may want to deploy Apache Ignite to the same cluster. To do so you should provide the following
+arguments:
+
+    --deploy-ignite
+    
+optional arguments:
+
+* `--ignite-memory <prc>` percentage (integer number from 0 to 100) of worker memory to be assigned to Apache Ignite.
+    Currently this simply reduces spark executor memory, Apache Ignite memory usage must be manually configured.
+* `--ignite-version <ver>` Apache Ignite version to use
+    
+Usage example:
+
+    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+               -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
+               --deploy-ignite --ignite-memory 30\
+               launch borisenko-cluster
+
+Ignite configuration is stored in `/opt/ignite/config/default-config.xml`. Note that Spark applications that use
+Apache Ignite still need to use `ignite-spark` and `ignite-spring` Spark packages (e.g. for Apache Ignite version 1.7.0
+one can run spark shell like this: `spark-shell  --packages org.apache.ignite:ignite-spark:1.7.0,org.apache.ignite:ignite-spring:1.7.0`)  
+
+Loading default config can be done as follows:
+
+ ```scala
+ import org.apache.ignite.spark._
+ import org.apache.ignite.configuration._
+ val ic = new IgniteContext(sc, "/opt/ignite/config/default-config.xml") 
+ ```
+
 Additional actions
 ==================
 
