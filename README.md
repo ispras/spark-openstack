@@ -21,7 +21,7 @@ You are welcome to contribute.
 Installation
 ============
 
-1. Install ansible version >= 2.0.2 (2.0.1 has a bug in template engine).
+1. Install ansible version >= 2.1.
 
     It looks like Openstack stuff in Ansible will only work with Python 2.7, so if Ansible is already installed for Python 3, you should use virtual environment with Python 2 or be careful with your $PATH (path for Ansible for Python2 should be the first one) 
     
