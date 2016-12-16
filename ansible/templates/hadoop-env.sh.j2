@@ -22,11 +22,7 @@
 # remote nodes.
 
 # The java implementation to use.
-{% if ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 %}
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/
-{% elif ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15 %}
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
-{% endif %}
+export JAVA_HOME={{ java_home }}/
 
 # The jsvc implementation to use. Jsvc is required to run secure datanodes
 # that bind to privileged ports to provide authentication of data transfer

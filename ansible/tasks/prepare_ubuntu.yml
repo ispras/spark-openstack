@@ -7,12 +7,12 @@
 - name: install packages
   package: name={{ item }} state=present
   with_items: "{{ ubuntu_14_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
 
 - name: install packages
   package: name={{ item }} state=present
   with_items: "{{ ubuntu_16_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15 and not skip_packages|default(False)
 
 
 - name: disable net.ipv6.conf.all.disable_ipv6
