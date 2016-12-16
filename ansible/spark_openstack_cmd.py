@@ -204,7 +204,7 @@ def ssh_first_slave(master_ip, cmd):
 #FIXME: copied from https://github.com/amplab/spark-ec2/blob/branch-1.5/deploy_templates.py
 def get_worker_mem_mb(master_ip):
     if args.spark_worker_mem_mb is not None:
-        return args.spark_worker_mem
+        return args.spark_worker_mem_mb
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
     slave_ram_kb = int(ssh_first_slave(master_ip, mem_command))
     slave_ram_mb = slave_ram_kb / 1024
