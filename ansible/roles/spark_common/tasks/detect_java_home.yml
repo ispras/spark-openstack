@@ -1,0 +1,10 @@
+---
+
+- name: get java_home
+  shell: ls -1d /usr/lib/jvm/java-[87]-oracle /usr/lib/jvm/java-[87]-openjdk-amd64 2> /dev/null | head -n1
+  register: java_home_cmd_res
+- set_fact: java_home={{java_home_cmd_res.stdout}}
+- stat: path={{java_home}}
+  register: java_home_stat
+- assert: that={{ java_home_stat.stat.isdir is defined and java_home_stat.stat.isdir}}
+- debug: msg="java_home={{java_home}}"

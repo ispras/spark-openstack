@@ -27,6 +27,9 @@
 - include: detect_conf.yml
   when: detect_conf
 
+- include: detect_java_home.yml
+  when: spark_common_completed is undefined
+
 - include: as_root.yml
   become: yes
   become_user: root
