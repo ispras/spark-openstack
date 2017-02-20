@@ -51,7 +51,12 @@
     retries: 3
     #TODO: failures are ignored
 
+    #TODO: add 'pip install pyOpenSSL ndg-httpsclient pyasn1' to fix SNIMissingWarning in old python versions
+    #      (see http://stackoverflow.com/questions/29099404/ssl-insecureplatform-error-when-using-requests-package)
+
+  #FIXME for Spark version >= 2.0, should use newer versions of toree
+  #  e.g. https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapshots/dev1/toree-pip/toree-0.2.0.dev1.tar.gz
   - name: install toree
-    pip: name=toree state=present executable=pip{{ python_version }} extra_args="--pre"
+    pip: name="https://dist.apache.org/repos/dist/dev/incubator/toree/0.1.0/rc6/toree-pip/apache-toree-0.1.0.tar.gz" state=present executable=pip{{ python_version }}
   become: True
   become_user: root
