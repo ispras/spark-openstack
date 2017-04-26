@@ -9,6 +9,7 @@ import os
 
 spark_versions = \
     {
+        "2.1.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.2": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.1": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
