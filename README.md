@@ -94,7 +94,7 @@ Running
     * `--spark-master-instance-type <instance-type>` use another instance flavor for master
     
     Example:
-    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+                ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                launch borisenko-cluster
 

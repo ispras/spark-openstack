@@ -78,6 +78,7 @@ parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage 
 parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
+parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
 parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
@@ -97,6 +98,7 @@ if args.ansible_bin is not None:
     ansible_cmd = os.path.join(args.ansible_bin, "ansible")
     ansible_playbook_cmd = os.path.join(args.ansible_bin, "ansible-playbook")
 
+n
 
 def make_extra_vars():
     extra_vars = dict()
@@ -148,6 +150,10 @@ def make_extra_vars():
     extra_vars["nfs_shares"] = map(lambda l: {"nfs_path": l[0], "mount_path": l[1]}, args.nfs_share)
 
     extra_vars["use_yarn"] = args.yarn
+
+    #ElasticSearch deployment => --extra-args
+    extra_vars["deploy_elastic"] = args.deploy_elastic
+
     extra_vars["skip_packages"] = args.skip_packages
 
     extra_vars["sync"] = "async" if args.async else "sync"
