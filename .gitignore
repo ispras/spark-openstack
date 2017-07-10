@@ -92,3 +92,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+#emacs
+\#*\#
+.\#*
+
+#idea
+.idea
