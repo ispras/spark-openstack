@@ -1,0 +1,8 @@
+---
+
+- include: install.yml
+- include: config.yml
+- include: start.yml
+
+- set_fact:
+    cassandra_completed: true

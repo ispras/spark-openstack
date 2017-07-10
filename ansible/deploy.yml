@@ -5,6 +5,7 @@
   become_user: root
   roles:
     - { role: ignite_prepare, when: deploy_ignite }
+    - { role: cassandra, when: deploy_cassandra }
     - spark_common
     - { role: ignite_config, when: deploy_ignite }
     - mountnfs

@@ -1,0 +1,2 @@
+- name: start Cassandra
+  command: "{{ cassandra_home }}/bin/cassandra"

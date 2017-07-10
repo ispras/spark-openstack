@@ -1,0 +1,33 @@
+---
+
+- name: Add APT key
+  when: ansible_os_family == 'Debian'
+  sudo: yes
+  apt_key:
+    url: "https://www.apache.org/dist/cassandra/KEYS"
+
+  tags:
+    - preinstall
+    - cassandra
+    - debian
+
+- name: Add APT repo
+  when: ansible_os_family == 'Debian'
+  sudo: yes
+  apt_repository:
+    repo: "deb http://www.apache.org/dist/cassandra/debian {{ cassandra_apt_version }} main"
+  tags:
+    - preinstall
+    - cassandra
+    - debian
+
+- name: Install Cassandra
+  apt:
+    name: cassandra
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  tags:
+    - install
+    - cassandra
+    - debian

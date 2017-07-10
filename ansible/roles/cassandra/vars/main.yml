@@ -1,0 +1,7 @@
+cassandra_version: 2.2.10
+cassandra_dir: "apache-cassandra-{{ cassandra_version }}"
+cassandra_file: "{{ cassandra_dir }}-bin.tar.gz"
+
+cassandra_download_url: "http://www-eu.apache.org/dist/cassandra/{{ cassandra_version }}/{{ cassandra_file }}"
+
+cassandra_home: "/opt/{{ cassandra_dir }}"
