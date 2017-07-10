@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
+
+
+#from __future__ import print_function
 import argparse
 import sys
 import subprocess
@@ -79,12 +81,15 @@ parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite ver
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
+parser.add_argument("--deploy-cassandra", action='store_true', help="Should we deploy Apache Cassandra")
 parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
                     help="Async Openstack operations (may not work with some Openstack environments)")
 
-args = parser.parse_args()
+#parser.add_argument("--step", action="store_true", help="Execute play step-by-step")
+
+args, unknown = parser.parse_known_args()
 if args.master_instance_type is None:
     args.master_instance_type = args.instance_type
 
@@ -98,7 +103,7 @@ if args.ansible_bin is not None:
     ansible_cmd = os.path.join(args.ansible_bin, "ansible")
     ansible_playbook_cmd = os.path.join(args.ansible_bin, "ansible-playbook")
 
-n
+
 
 def make_extra_vars():
     extra_vars = dict()
@@ -153,6 +158,10 @@ def make_extra_vars():
 
     #ElasticSearch deployment => --extra-args
     extra_vars["deploy_elastic"] = args.deploy_elastic
+
+    #Cassandra deployment => --extra-args
+    extra_vars["deploy_cassandra"] = args.deploy_cassandra
+
 
     extra_vars["skip_packages"] = args.skip_packages
 
@@ -257,12 +266,16 @@ def get_master_mem(master_ip):
 def get_slave_cpus(master_ip):
     return int(ssh_first_slave(master_ip, "nproc"))
 
+
+
+
+
 if args.action == "launch":
-    subprocess.call([ansible_playbook_cmd, "create.yml", "--extra-vars", repr(make_extra_vars())])
+    subprocess.call([ansible_playbook_cmd, *unknown, "create.yml", "--extra-vars", repr(make_extra_vars())])
     extra_vars = make_extra_vars()
     with open(os.devnull, "w") as devnull:
         subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
-    initial_setup_status = subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+    initial_setup_status = subprocess.call([ansible_playbook_cmd, *unknown, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
     if initial_setup_status != 0:
         print("One of your instances didn't come up; please do the following:")
         print("    1. Check your instances states in your Openstack dashboard; if there are any in ERROR state, terminate them")
@@ -282,7 +295,7 @@ if args.action == "launch":
         extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
 
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    subprocess.call([ansible_playbook_cmd, "-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call([ansible_playbook_cmd, *unknown, "-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.action == "destroy":
     res = subprocess.check_output([ansible_cmd,
@@ -291,7 +304,7 @@ elif args.action == "destroy":
                                    "-m", "debug", "-a", "var=groups['%s_slaves']" % args.cluster_name,
                                    args.cluster_name + "-master"])
     extra_vars = make_extra_vars()
-    res = subprocess.call([ansible_playbook_cmd, "create.yml", "--extra-vars", repr(extra_vars)])
+    res = subprocess.call([ansible_playbook_cmd, *unknown, "create.yml", "--extra-vars", repr(extra_vars)])
 elif args.action == "get-master":
     print(get_master_ip())
 elif args.action == "config":
@@ -299,6 +312,6 @@ elif args.action == "config":
     env['ANSIBLE_ROLES_PATH'] = 'roles'
     extra_vars = make_extra_vars()
     extra_vars['roles_dir'] = '../roles'
-    subprocess.call([ansible_playbook_cmd, "-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)], env=env)
+    subprocess.call([ansible_playbook_cmd, *unknown, "-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)], env=env)
 else:
     err("unknown action: " + args.action)
