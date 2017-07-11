@@ -3,15 +3,24 @@
 
 - name: start hadoop dfs
   command: "{{ hadoop_home }}/sbin/start-dfs.sh"
+  tags:
+    - start
+
 
 - name: start hadoop yarn
   command: "{{ hadoop_home }}/sbin/start-yarn.sh"
   when: use_yarn
+  tags:
+    - start
 
 - name: start spark master
   shell: SPARK_MASTER_IP="{{ cluster_name }}-master" {{ spark_home }}/sbin/start-master.sh
   when: not use_yarn
+  tags:
+    - start
 
 - name: start the slaves
   shell: "{{ spark_home }}/sbin/start-slaves.sh"
   when: not use_yarn
+  tags:
+    - start

@@ -3,11 +3,17 @@
 #FIXME: should be in prepare, but can't since spark_common needs ignite_cp and hadoop user is created in spark_common
 - name: set user and priviliges on {{ignite_file}}
   file: path=/opt/{{ ignite_file }} owner={{ hadoop_user }} group=hadoop recurse=yes
+  tags:
+    - install
 
 - name: deploy default-config.xml
   template: src=templates/ignite/default-config.xml.j2 dest={{ ignite_home }}/config/default-config.xml owner={{ hadoop_user }} group=hadoop
+  tags:
+    - install
 
 #FIXME: should be a separate task
 #Spark Executors need to write to Ignite work directory, so this should be run as the same user
 - shell: start-stop-daemon --start --chuid {{ hadoop_user }} --exec {{ignite_home}}/bin/ignite.sh -m --pidfile /home/{{ hadoop_user }}/ignite.pid -b --no-close > /home/{{ hadoop_user }}/ignite.log 2>&1
   when: "'{{ inventory_hostname }}' != '{{ active_master_inventory_hostname }}'"
+  tags:
+    - start

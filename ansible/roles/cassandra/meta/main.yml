@@ -1,0 +1,4 @@
+---
+
+dependencies:
+    - {role : spark_common }
