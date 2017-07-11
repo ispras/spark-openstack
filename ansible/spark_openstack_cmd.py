@@ -152,7 +152,7 @@ def make_extra_vars():
 
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
     extra_vars["deploy_jupyterhub"] = False
-    extra_vars["nfs_shares"] = map(lambda l: {"nfs_path": l[0], "mount_path": l[1]}, args.nfs_share)
+    extra_vars["nfs_shares"] = [{"nfs_path": l[0], "mount_path": l[1]} for l in  args.nfs_share]
 
     extra_vars["use_yarn"] = args.yarn
 
@@ -209,12 +209,12 @@ def get_master_ip():
                                    "--extra-vars", repr(make_extra_vars()),
                                    "-m", "debug", "-a", "var=hostvars[inventory_hostname].ansible_ssh_host",
                                    args.cluster_name + "-master"])
-    return parse_host_ip(res)
+    return parse_host_ip(res.decode()) #Python3 issue
 
 def ssh_output(host, cmd):
     return subprocess.check_output(["ssh", "-q", "-t", "-o", "StrictHostKeyChecking=no",
                                     "-o", "UserKnownHostsFile=/dev/null",
-                                    "-i", args.identity_file, "ubuntu@" + host, cmd])
+                                    "-i", args.identity_file, "ubuntu@" + host, cmd]).decode()
 
 def ssh_first_slave(master_ip, cmd):
     #can't do `head -n1 /opt/spark/conf/slaves` since it's not deployed yet
