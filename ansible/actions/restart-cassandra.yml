@@ -1,0 +1,5 @@
+---
+- name: Restart Cassandra
+  hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  roles:
+    - { role: cassandra, restart: True }

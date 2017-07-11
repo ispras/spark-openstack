@@ -1,7 +1,13 @@
 ---
 - include: install.yml
+  when: not restart|default(False)
 - include: config.yml
+  when: not restart|default(False)
 - include: start.yml
+  when: not restart|default(False)
+
+- include: restart.yml
+  when: restart|default(False)
 
 - set_fact:
     cassandra_completed: true
