@@ -1,0 +1,3 @@
+[submodule "ansible/roles/ansible-sbt"]
+	path = ansible/roles/ansible-sbt
+	url = git@github.com:milinda/ansible-sbt.git
