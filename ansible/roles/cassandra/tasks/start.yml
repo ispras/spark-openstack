@@ -1,2 +1,6 @@
+---
+
 - name: start Cassandra
-  command: "{{ cassandra_home }}/bin/cassandra"
+  shell: start-stop-daemon --start --chuid {{ hadoop_user }} --exec {{ cassandra_home }}/bin/cassandra -m --pidfile /home/{{ hadoop_user }}/cassandra.pid -b --no-close > /home/{{ hadoop_user }}/cassandra.log 2>&1
+  tags:
+    - start
