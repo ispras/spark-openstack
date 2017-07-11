@@ -1,0 +1,5 @@
+---
+
+- name: Stop Cassandra
+  shell: kill -9 $(cat /home/{{ hadoop_user }}/cassandra.pid)
+  ignore_errors: True
