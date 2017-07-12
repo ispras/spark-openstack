@@ -8,6 +8,10 @@ import argparse
 import sys
 import subprocess
 import os
+import urllib.request as request
+
+connector_fn = "/tmp/spark-cassandra-connector.jar"
+
 
 spark_versions = \
     {
@@ -104,6 +108,18 @@ if args.ansible_bin is not None:
     ansible_playbook_cmd = os.path.join(args.ansible_bin, "ansible-playbook")
 
 
+def get_cassandra_connector_jar(spark_version : str):
+
+    if not os.path.exists(connector_fn):
+        print("Downloading Spark Cassandra Connector for Spark version {0}".format(spark_version))
+        if (spark_version.startswith("1.6")): #scala 2.10
+            return request.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/1.6.8-s_2.10/spark-cassandra-connector-1.6.8-s_2.10.jar", filename=connector_fn)[0]
+        elif (spark_version.startswith("2")): #scala 2.11
+            return request.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/2.0.3-s_2.11/spark-cassandra-connector-2.0.3-s_2.11.jar", filename=connector_fn)[0]
+        else:
+            return ""
+    else:
+        return connector_fn
 
 def make_extra_vars():
     extra_vars = dict()
@@ -179,6 +195,13 @@ def make_extra_vars():
                 add_jar(os.path.join(jar, f))
         else:
             add_jar(jar)
+
+    # Obtain Cassandra connector jar if cassandra is deployed
+    if args.deploy_cassandra:
+        cassandra_jar = get_cassandra_connector_jar(args.spark_version)
+        add_jar(cassandra_jar)
+
+
     extra_vars["extra_jars"] = extra_jars
 
     extra_vars["deploy_ignite"] = args.deploy_ignite
@@ -315,3 +338,7 @@ elif args.action == "config":
     subprocess.call([ansible_playbook_cmd, *unknown, "-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)], env=env)
 else:
     err("unknown action: " + args.action)
+
+if(os.path.exists(connector_fn)):
+    print("Removing Spark Cassandra Connector")
+    os.remove(connector_fn)
