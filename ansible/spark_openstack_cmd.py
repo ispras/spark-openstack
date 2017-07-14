@@ -9,8 +9,12 @@ import sys
 import subprocess
 import os
 import urllib.request as request
+from zipfile import ZipFile
+from shutil import rmtree
 
 connector_fn = "/tmp/spark-cassandra-connector.jar"
+elastic_dir ="/tmp/elasticsearch-hadoop/"
+elastic_fn=""
 
 
 spark_versions = \
@@ -109,7 +113,6 @@ if args.ansible_bin is not None:
 
 
 def get_cassandra_connector_jar(spark_version : str):
-
     if not os.path.exists(connector_fn):
         print("Downloading Spark Cassandra Connector for Spark version {0}".format(spark_version))
         if (spark_version.startswith("1.6")): #scala 2.10
@@ -120,6 +123,14 @@ def get_cassandra_connector_jar(spark_version : str):
             return ""
     else:
         return connector_fn
+
+def get_elastic_jar():
+    global elastic_fn
+    if not elastic_fn or  not os.path.exists(elastic_fn):
+        print("Downloading ElasticSearch Hadoop integration")
+        with ZipFile(request.urlretrieve("http://download.elastic.co/hadoop/elasticsearch-hadoop-5.5.0.zip")[0]) as archive:
+            elastic_fn = archive.extract("elasticsearch-hadoop-5.5.0/dist/elasticsearch-hadoop-5.5.0.jar", path=elastic_dir)
+    return elastic_fn
 
 def make_extra_vars():
     extra_vars = dict()
@@ -137,7 +148,7 @@ def make_extra_vars():
 
     extra_vars["os_project_name"] = os.getenv('OS_PROJECT_NAME') or os.getenv('OS_TENANT_NAME')
     if not extra_vars["os_project_name"]:
-        print("It seems that you haven't sources your Openstack OPENRC file; quiting")
+        print("It seems that you h aven't sources your Openstack OPENRC file; quiting")
         exit(-1)
 
     extra_vars["os_auth_url"] = os.getenv('OS_AUTH_URL')
@@ -201,6 +212,10 @@ def make_extra_vars():
         cassandra_jar = get_cassandra_connector_jar(args.spark_version)
         add_jar(cassandra_jar)
 
+    if args.deploy_elastic:
+        elastic_jar = get_elastic_jar()
+        add_jar(elastic_jar)
+
 
     extra_vars["extra_jars"] = extra_jars
 
@@ -249,7 +264,7 @@ def get_worker_mem_mb(master_ip):
         return args.spark_worker_mem_mb
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
     slave_ram_kb = int(ssh_first_slave(master_ip, mem_command))
-    slave_ram_mb = slave_ram_kb / 1024
+    slave_ram_mb = slave_ram_kb // 1024
     # Leave some RAM for the OS, Hadoop daemons, and system caches
     if slave_ram_mb > 100*1024:
         slave_ram_mb = slave_ram_mb - 15 * 1024 # Leave 15 GB RAM
@@ -269,7 +284,7 @@ def get_worker_mem_mb(master_ip):
 def get_master_mem(master_ip):
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
     master_ram_kb = int(ssh_output(master_ip, mem_command))
-    master_ram_mb = master_ram_kb / 1024
+    master_ram_mb = master_ram_kb // 1024
     # Leave some RAM for the OS, Hadoop daemons, and system caches
     if master_ram_mb > 100*1024:
         master_ram_mb = master_ram_mb - 15 * 1024 # Leave 15 GB RAM
@@ -342,3 +357,7 @@ else:
 if(os.path.exists(connector_fn)):
     print("Removing Spark Cassandra Connector")
     os.remove(connector_fn)
+
+if (os.path.exists(elastic_dir)):
+    print("Removing Elastic Hadoop Integration")
+    rmtree(elastic_dir)
