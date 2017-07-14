@@ -22,6 +22,8 @@
 - debug: var=spark_md5
 
 - include: tasks/prepare_ubuntu.yml
+  become: yes
+  become_user: root
   when: spark_common_completed is undefined
 
 - include: detect_conf.yml
@@ -37,4 +39,3 @@
 
 - set_fact:
     spark_common_completed: true
-

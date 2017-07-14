@@ -1,22 +1,22 @@
 ---
 
+- name: Add OpenJDK-r repository
+  apt_repository:
+    repo: 'ppa:openjdk-r/ppa'
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
+  tags:
+    - install
+
 - name: update apt cache
   apt: update_cache=yes
   retries: 2
   tags:
     - install
 
-- name: install packages
-  package: name={{ item }} state=present
-  with_items: "{{ ubuntu_14_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
-  tags:
-    - install
 
 - name: install packages
   package: name={{ item }} state=present
-  with_items: "{{ ubuntu_16_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15 and not skip_packages|default(False)
+  with_items: "{{ ubuntu_packages }}"
   tags:
     - install
 
