@@ -2,3 +2,6 @@
 
 - include: setup.yml
   when: not skip_spark_setup|default(False)
+  tags:
+  - install
+  - spark_install

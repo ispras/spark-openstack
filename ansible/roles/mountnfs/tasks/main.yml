@@ -8,9 +8,16 @@
   with_items:
     - nfs-kernel-server
     - nfs-common
+  tags:
+  - prepare
+
 
 - include: add_share.yml
   with_items: "{{nfs_shares}}"
+  tags:
+  - prepare
 
 - name: mount
   shell: mount -a
+  tags:
+  - prepare

@@ -1,22 +1,26 @@
 ---
 
 - debug: var=python_version
+- block:
+  - name: install packages
+    sudo: yes
+    apt: name={{ item }} state=present
+    with_items:
+      - npm
+      - nodejs-legacy
 
-- name: install packages
-  sudo: yes
-  apt: name={{ item }} state=present
-  with_items:
-    - npm
-    - nodejs-legacy
+  - sudo: yes
+    shell: npm install -g configurable-http-proxy
 
-- sudo: yes
-  shell: npm install -g configurable-http-proxy
+  - name: install pip packages
+    sudo: yes
+    pip: name={{ item }} state=present executable=pip{{ python_version }}
+    with_items:
+      - jupyterhub
 
-- name: install pip packages
-  sudo: yes
-  pip: name={{ item }} state=present executable=pip{{ python_version }}
-  with_items:
-    - jupyterhub
+  - copy: src=jupyterhub_config.py dest=/home/{{ hadoop_user }}
+  tags:
+  - install
+  - jupyterhub_install
 
-- copy: src=jupyterhub_config.py dest=/home/{{ hadoop_user }}
 

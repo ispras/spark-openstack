@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 
 
-#from __future__ import print_function
+from __future__ import print_function
 import argparse
 import sys
 import subprocess
 import os
-import urllib.request as request
+import urllib
 from zipfile import ZipFile
 from shutil import rmtree
+import itertools
 
 connector_fn = "/tmp/spark-cassandra-connector.jar"
 elastic_dir ="/tmp/elasticsearch-hadoop/"
@@ -44,6 +45,12 @@ spark_versions = \
         "1.0.0": {"hadoop_versions": ["1", "cdh4"]},
     }
 
+toree_versions = \
+    {
+        "1" :  "http://apache.org/dist/incubator/toree/0.1.0-incubating/toree-pip/apache-toree-0.1.0.tar.gz",
+        "2" :  "https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapshots/dev1/toree-pip/toree-0.2.0.dev1.tar.gz"
+    }
+
 parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Openstack.',
                                  formatter_class=argparse.RawDescriptionHelpFormatter,
                                  epilog='Usage real-life examples:\t\n'
@@ -66,7 +73,8 @@ parser.add_argument("-m", "--master-instance-type", help="master instance type, 
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
 parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
-parser.add_argument("-j", "--deploy-jupyter", default=False, help="Should we deploy jupyter on master node.")
+parser.add_argument("-j", "--deploy-jupyter", action='store_true', help="Should we deploy jupyter on master node.")
+parser.add_argument("-jh", "--deploy-jupyterhub",action='store_true', help="Should we deploy jupyterHub on master node")
 parser.add_argument("--spark-version", default="1.6.2", help="Spark version to use")
 parser.add_argument("--hadoop-version", help="Hadoop version to use")
 parser.add_argument("--boot-from-volume", default=False, help="Should the cluster be based on Cinder volumes. "
@@ -97,10 +105,21 @@ parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
                     help="Async Openstack operations (may not work with some Openstack environments)")
+parser.add_argument("--tags", help="Ansible: run specified tags")
+parser.add_argument("--skip-tags", help="Ansible: skip specified tags")
+
 
 #parser.add_argument("--step", action="store_true", help="Execute play step-by-step")
 
 args, unknown = parser.parse_known_args()
+if args.tags is not None:
+    unknown.append("--tags")
+    unknown.append(args.tags)
+
+if args.skip_tags is not None:
+    unknown.append("--skip-tags")
+    unknown.append(args.skip_tags)
+
 if args.master_instance_type is None:
     args.master_instance_type = args.instance_type
 
@@ -115,13 +134,13 @@ if args.ansible_bin is not None:
     ansible_playbook_cmd = os.path.join(args.ansible_bin, "ansible-playbook")
 
 
-def get_cassandra_connector_jar(spark_version : str):
+def get_cassandra_connector_jar(spark_version):
     if not os.path.exists(connector_fn):
         print("Downloading Spark Cassandra Connector for Spark version {0}".format(spark_version))
         if (spark_version.startswith("1.6")): #scala 2.10
-            return request.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/1.6.8-s_2.10/spark-cassandra-connector-1.6.8-s_2.10.jar", filename=connector_fn)[0]
+            return urllib.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/1.6.8-s_2.10/spark-cassandra-connector-1.6.8-s_2.10.jar", filename=connector_fn)[0]
         elif (spark_version.startswith("2")): #scala 2.11
-            return request.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/2.0.3-s_2.11/spark-cassandra-connector-2.0.3-s_2.11.jar", filename=connector_fn)[0]
+            return urllib.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/2.0.3-s_2.11/spark-cassandra-connector-2.0.3-s_2.11.jar", filename=connector_fn)[0]
         else:
             return ""
     else:
@@ -131,7 +150,7 @@ def get_elastic_jar():
     global elastic_fn
     if not elastic_fn or  not os.path.exists(elastic_fn):
         print("Downloading ElasticSearch Hadoop integration")
-        with ZipFile(request.urlretrieve("http://download.elastic.co/hadoop/elasticsearch-hadoop-5.5.0.zip")[0]) as archive:
+        with ZipFile(urllib.urlretrieve("http://download.elastic.co/hadoop/elasticsearch-hadoop-5.5.0.zip")[0]) as archive:
             elastic_fn = archive.extract("elasticsearch-hadoop-5.5.0/dist/elasticsearch-hadoop-5.5.0.jar", path=elastic_dir)
     return elastic_fn
 
@@ -181,7 +200,10 @@ def make_extra_vars():
         del extra_vars["os_swift_password"]
 
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
-    extra_vars["deploy_jupyterhub"] = False
+    if (args.deploy_jupyter):
+        extra_vars["toree_version"] = toree_versions[extra_vars["spark_version"][0]]
+
+    extra_vars["deploy_jupyterhub"] = args.deploy_jupyterhub
     extra_vars["nfs_shares"] = [{"nfs_path": l[0], "mount_path": l[1]} for l in  args.nfs_share]
 
     extra_vars["use_yarn"] = args.yarn
@@ -311,12 +333,24 @@ def get_slave_cpus(master_ip):
 
 
 
+cmdline = [ansible_playbook_cmd]
+cmdline.extend(unknown)
+
+extra_vars = make_extra_vars()
+
 if args.action == "launch":
-    subprocess.call([ansible_playbook_cmd, *unknown, "create.yml", "--extra-vars", repr(make_extra_vars())])
-    extra_vars = make_extra_vars()
+    cmdline_create = cmdline[:]
+    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_create)
+
     with open(os.devnull, "w") as devnull:
         subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
-    initial_setup_status = subprocess.call([ansible_playbook_cmd, *unknown, "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+
+
+    cmdline_initial_setup_status = cmdline[:]
+    cmdline_initial_setup_status.extend([ "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+    initial_setup_status = subprocess.call(cmdline_initial_setup_status)
+
     if initial_setup_status != 0:
         print("One of your instances didn't come up; please do the following:")
         print("    1. Check your instances states in your Openstack dashboard; if there are any in ERROR state, terminate them")
@@ -336,7 +370,10 @@ if args.action == "launch":
         extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
 
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    subprocess.call([ansible_playbook_cmd, *unknown, "-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_inventory = cmdline[:]
+    cmdline_inventory.extend(["-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_inventory)
+
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.action == "destroy":
     res = subprocess.check_output([ansible_cmd,
@@ -345,7 +382,9 @@ elif args.action == "destroy":
                                    "-m", "debug", "-a", "var=groups['%s_slaves']" % args.cluster_name,
                                    args.cluster_name + "-master"])
     extra_vars = make_extra_vars()
-    res = subprocess.call([ansible_playbook_cmd, *unknown, "create.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_create = cmdline[:]
+    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
+    res = subprocess.call(cmdline_create)
 elif args.action == "get-master":
     print(get_master_ip())
 elif args.action == "config":
@@ -353,7 +392,10 @@ elif args.action == "config":
     env['ANSIBLE_ROLES_PATH'] = 'roles'
     extra_vars = make_extra_vars()
     extra_vars['roles_dir'] = '../roles'
-    subprocess.call([ansible_playbook_cmd, *unknown, "-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)], env=env)
+
+    cmdline_inventory = cmdline[:]
+    cmdline_inventory.extend(["-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_inventory)
 else:
     err("unknown action: " + args.action)
 

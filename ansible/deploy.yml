@@ -15,12 +15,10 @@
     - spark_master
 
 - hosts: "{{ cluster_name }}_master"
-  become: yes
-  become_user: root
   roles:
-    - { role: jupyter, install_as_service: True, when: deploy_jupyter }
-    - { role: jupyter, python_version: 3, when: deploy_jupyter }
-    - { role: jupyterhub, python_version: 3, when: deploy_jupyterhub }
+    - { role: jupyter, install_as_service: True, when: deploy_jupyter}
+    - { role: jupyter, python_version: 3, when: deploy_jupyter}
+    - { role: jupyterhub, python_version: 3, when: deploy_jupyterhub}
 
 
 

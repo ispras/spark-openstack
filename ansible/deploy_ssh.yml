@@ -4,6 +4,7 @@
   tasks:
     - name: create directory for ssh-keys if doesn't exist
       file: path=files/keys state=directory
+  tags: prepare
 
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
@@ -13,6 +14,7 @@
     - name: Check if instances really got floating IPs
       when: hostvars[inventory_hostname].openstack.public_v4 == ''
       fail: msg="One of the instances didn't get floating IP address"
+  tags: prepare
 
 
 
@@ -29,6 +31,7 @@
           delay=3
           timeout=300
 #    - debug: msg="Checking ssh for {{ hostvars[inventory_hostname].openstack.public_v4 }}"
+  tags: prepare
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   gather_facts: no
@@ -37,6 +40,7 @@
     - name: install Python 2 if missing
       raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
       delay: 10
+  tags: prepare
 
 - hosts: "{{ cluster_name }}_master"
   tasks:
@@ -46,6 +50,8 @@
       fetch: src="/home/{{ hadoop_user }}/.ssh/id_rsa.pub" dest="files/keys/{{ cluster_name }}.pub" flat=yes
     - name: get the private key
       fetch: src="/home/{{ hadoop_user }}/.ssh/id_rsa" dest="files/keys/{{ cluster_name }}" flat=yes
+
+  tags: prepare
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   become: True
@@ -66,3 +72,4 @@
       lineinfile: dest=/etc/hosts state=present line="{{ hostvars[item].openstack.private_v4}} {{ hostvars[item].openstack.name }}"
       with_items: "{{ play_hosts }}"
     #  template: src=templates/hosts.j2 dest=/etc/hosts
+  tags: prepare
