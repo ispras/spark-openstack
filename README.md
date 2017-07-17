@@ -105,10 +105,9 @@ Running
 
     all parameter values are same as for `launch` command
 
-## Optional goodies
+# Optional goodies
 
-Enabling Openstack Swift support
-==========================
+## Enabling Openstack Swift support
 
 You may want to use Openstack Swift object storage as a drop-in addition to your HDFS. To enable it, you should specify:
 
@@ -136,8 +135,7 @@ Spark usage example:
 Warning! This options writes swift-username and swift-password in core-site.xml (in two places) as plain text.
 You should use it carefully and it's quite reasonable to use separate user for Swift.
 
-Enabling and accessing Jupyter notebook
-==========================
+## Enabling and accessing Jupyter notebook
 
 You may want to use Jupyter notebook engine. To enable it you should use optional command line parameter:
 
@@ -157,8 +155,8 @@ Alternatively, you can look for lines like `"msg": "jupyter install finished on 
 
 Open `<master-ip>:8888` in a browser. Using two Spark kernels at the same time won't work, so if you want a different Spark kernel shutdown the other one first!
 
-Manually running Jupyter (e.g after cluster restart)
-========================
+## Manually running Jupyter (e.g after cluster restart)
+
 
 Login to master (either get master IP from OpenStack Web UI or run `./spark-openstack get-master <cluster-name>`)
 
@@ -235,6 +233,45 @@ Loading default config can be done as follows:
  import org.apache.ignite.configuration._
  val ic = new IgniteContext(sc, "/opt/ignite/config/default-config.xml")
  ```
+
+## Apache Cassandra
+
+You may want to deploy Apache Cassandra to the cluster. To do so, provide an argument:
+
+    --deploy-cassandra
+
+Optionally, you may specify a version to deploy by providing:
+
+    --cassandra-version <version>
+
+Cassandra 3.11.0 is deployed by default
+
+Usage example:
+
+     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+               -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
+               --deploy-cassandra\
+               launch borisenko-cluster
+
+## ElasticSearch
+
+You may want to deploy ElasticSearch to the cluster. This is done via official ElasticSearch ansible role which is included as a git submodule.
+
+First, init/or update Git submodules:
+`git submodule init` or `git submodule update`
+
+Then, you will be able to deploy ElasticSearch by providing:
+
+    --deploy-elastic
+
+Latest ElasticSearch version (5.x) is deployed.
+
+Usage example:
+
+    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+               -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
+               --deploy-elastic\
+               launch borisenko-cluster
 
 Additional actions
 ==================

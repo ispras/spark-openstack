@@ -19,6 +19,7 @@ elastic_fn=""
 
 spark_versions = \
     {
+        "2.2.0": {"hadoop_versions": ["2.6", "2.7"]},
         "2.1.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.2": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.1": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
@@ -89,7 +90,9 @@ parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite ver
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
+
 parser.add_argument("--deploy-cassandra", action='store_true', help="Should we deploy Apache Cassandra")
+parser.add_argument("--cassandra-version", default="2.2.10", help="Apache Cassandra version to use")
 parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
@@ -188,7 +191,7 @@ def make_extra_vars():
 
     #Cassandra deployment => --extra-args
     extra_vars["deploy_cassandra"] = args.deploy_cassandra
-
+    extra_vars["cassandra_version"] = args.cassandra_version
 
     extra_vars["skip_packages"] = args.skip_packages
 
