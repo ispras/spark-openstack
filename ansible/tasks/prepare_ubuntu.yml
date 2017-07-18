@@ -4,21 +4,14 @@
   apt_repository:
     repo: 'ppa:openjdk-r/ppa'
   when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
-  tags:
-    - install
 
 - name: update apt cache
   apt: update_cache=yes
   retries: 2
-  tags:
-    - install
-
 
 - name: install packages
   package: name={{ item }} state=present
   with_items: "{{ ubuntu_packages }}"
-  tags:
-    - install
 
 
 - name: disable net.ipv6.conf.all.disable_ipv6
@@ -52,14 +45,10 @@
 - name: get Hadoop distro (except CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/ checksum="md5:{{ hadoop_md5 }}"
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}' and {{ hadoop_version }} != 'cdh4'"
-  tags:
-    - install
 
 - name: get Hadoop distro (CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}' and {{ hadoop_version }} == 'cdh4'"
-  tags:
-    - install
 
 
 - name: distribute hadoop among slaves
@@ -68,38 +57,27 @@
     dest: "/usr/local/{{ hadoop_file }}.tar.gz"
     checksum: yes
   delegate_to: "{{ active_master_inventory_hostname }}"
-  tags:
-    - install
 
 - name: unzip hadoop
   unarchive: copy=no src=/usr/local/{{ hadoop_file }}.tar.gz dest=/usr/local/ owner={{ hadoop_user }} group=hadoop
-  tags:
-    - install
 
 - name: create hadoop symlink
   file: src=/usr/local/{{ hadoop_file }} dest=/usr/local/hadoop state=link
-  tags:
-    - install
+
 
 - name: put needed swift library
   get_url: url={{ swift_download_url }} dest=/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/
   when: "{{ hadoop_version }} == 2.3 or {{ hadoop_version }} == 2.4 or {{ hadoop_version }} == 2.6 or {{ hadoop_version }} == 2.7"
-  tags:
-    - install
 
 #- name: remove hadoop archive
 #  file: path=/usr/local/{{ hadoop_file }}.tar.gz state=absent
 
 - name: set user and priviliges on hadoop
   file: path=/usr/local/{{ hadoop_file }} owner={{ hadoop_user }} group=hadoop recurse=yes
-  tags:
-    - install
 
 - name: get Spark distro
   get_url: url={{ spark_download_url }} dest=/opt/ checksum="md5:{{ spark_md5 }}"
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
-  tags:
-    - install
 
 #- name: put spark distro to master
 #  copy: src={{ spark_arch }} dest=/opt/
@@ -111,34 +89,24 @@
     dest: "/opt/{{ spark_file }}.tgz"
     checksum: yes
   delegate_to: "{{ active_master_inventory_hostname }}"
-  tags:
-    - install
 
 - name: unzip spark
   unarchive: copy=no src=/opt/{{ spark_file }}.tgz dest=/opt
-  tags:
-    - install
 
 #- name: remove spark archive
 #  file: path=/opt/{{ spark_file }}.tgz state=absent
 
 - name: create spark symlink
   file: src={{ spark_home }} dest=/opt/spark state=link
-  tags:
-    - install
 
 - name: create spark symlink
   file: src={{ spark_home }} dest=/usr/local/spark state=link
-  tags:
-    - install
+
 
 - name: create extra jars directory
   file: path={{ spark_extra_jars_dir }} owner={{ hadoop_user }} group=hadoop state=directory
-  tags:
-    - install
 
 - name: copy extra jars
   copy: src={{item.path}} dest={{ spark_extra_jars_dir }}/{{item.name}} owner={{ hadoop_user }} group=hadoop mode=0644
   with_items: "{{extra_jars}}"
-  tags:
-    - install
+

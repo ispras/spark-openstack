@@ -1,12 +1,15 @@
 ---
 
+
+
 - hosts: "{{ cluster_name }}_master"
   roles:
-    - { role: spark_common, skip_spark_setup: True, detect_conf: True }
+    - { role: spark_common, detect_conf: True }
   tasks:
     - include: ../tasks/stop_all.yml
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  become: True
   vars:
     clear_logs: False
   tasks:
@@ -21,6 +24,6 @@
 
 - hosts: "{{ cluster_name }}_master"
   roles:
-    - { role: spark_common, skip_spark_setup: True, detect_conf: True }
+    - { role: spark_common, detect_conf: True }
   tasks:
     - include: ../tasks/start_all.yml

@@ -266,6 +266,13 @@ Then, you will be able to deploy ElasticSearch by providing:
 
 Latest ElasticSearch version (5.x) is deployed.
 
+You may want to change ElasticSearch heap size. You can do so by specifying
+
+    --es-heap-size <desized size>
+
+Default heap size is `1g` (1 GB)
+
+
 Usage example:
 
     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \

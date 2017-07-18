@@ -2,15 +2,15 @@
 #needs vars from spark_common
 
 - name: stop hadoop dfs (if running)
-  command: "{{ hadoop_home }}/sbin/stop-dfs.sh"
+  command: "/usr/local/hadoop/sbin/stop-dfs.sh"
 
 - name: stop hadoop yarn (if running)
-  command: "{{ hadoop_home }}/sbin/stop-yarn.sh"
+  command: "/usr/local/hadoop/sbin/stop-yarn.sh"
 
 - name: stop spark master (if running)
-  command: "{{ spark_home }}/sbin/stop-master.sh"
+  command: "/opt/spark/sbin/stop-master.sh"
   when: not use_yarn
 
 - name: stop the slaves (if running)
-  shell: "{{ spark_home }}/sbin/stop-slaves.sh"
+  shell: "/opt/spark/sbin/stop-slaves.sh"
   when: not use_yarn
