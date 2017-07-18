@@ -21,12 +21,11 @@
     - { role: jupyterhub, python_version: 3, when: deploy_jupyterhub}
 
 
-
 - hosts: "{{ cluster_name }}_master"
   become: yes
   become_user: root
   roles:
-    - { role: elasticsearch, when: deploy_elastic, es_instance_name: "{{ cluster_name}}", es_heap_size: "1g",
+    - { role: elasticsearch, when: deploy_elastic, es_instance_name: "{{ cluster_name}}", es_heap_size: "{{ es_heap_size }}",
     es_config: {
         cluster.name: "{{ cluster_name }}",
         discovery.zen.ping.unicast.hosts: "{{ active_master_ip }}:9300",
@@ -44,6 +43,9 @@
     es_version_lock: false
     es_plugins:
      - plugin: ingest-geoip
+  tags:
+  - install
+  - es_install
 
 
 
@@ -63,6 +65,7 @@
         network.host: "0"
         }
     }
+
   vars:
     es_scripts: false
     es_templates: false
@@ -70,7 +73,9 @@
     es_api_port: 9200
     es_plugins:
     - plugin: ingest-geoip
-
+  tags:
+  - install
+  - es_install
 
 
 #- hosts: localhost

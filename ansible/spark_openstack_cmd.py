@@ -98,6 +98,7 @@ parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite ver
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
+parser.add_argument("--es-heap-size", default='1g', help="ElasticSearch heap size")
 
 parser.add_argument("--deploy-cassandra", action='store_true', help="Should we deploy Apache Cassandra")
 parser.add_argument("--cassandra-version", default="2.2.10", help="Apache Cassandra version to use")
@@ -210,6 +211,7 @@ def make_extra_vars():
 
     #ElasticSearch deployment => --extra-args
     extra_vars["deploy_elastic"] = args.deploy_elastic
+    extra_vars["es_heap_size"] = args.es_heap_size
 
     #Cassandra deployment => --extra-args
     extra_vars["deploy_cassandra"] = args.deploy_cassandra
