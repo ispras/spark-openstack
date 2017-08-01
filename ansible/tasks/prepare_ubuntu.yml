@@ -7,11 +7,13 @@
 
 - name: update apt cache
   apt: update_cache=yes
+  when: not skip_packages|default(False)
   retries: 2
 
 - name: install packages
   package: name={{ item }} state=present
   with_items: "{{ ubuntu_packages }}"
+  when: not skip_packages|default(False)
 
 
 - name: disable net.ipv6.conf.all.disable_ipv6

@@ -11,11 +11,7 @@ import os
 import urllib
 from zipfile import ZipFile
 from shutil import rmtree
-import itertools
-
-connector_fn = "/tmp/spark-cassandra-connector.jar"
-elastic_dir ="/tmp/elasticsearch-hadoop/"
-elastic_fn=""
+import urlparse
 
 
 spark_versions = \
@@ -136,24 +132,36 @@ if args.ansible_bin is not None:
 
 
 def get_cassandra_connector_jar(spark_version):
-    if not os.path.exists(connector_fn):
+    spark_cassandra_connector_url = "http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/1.6.8-s_2.10/spark-cassandra-connector-1.6.8-s_2.10.jar" \
+        if args.spark_version.startswith("1.6") \
+        else "http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/2.0.3-s_2.11/spark-cassandra-connector-2.0.3-s_2.11.jar"
+
+    spark_cassandra_connector_filename = "/tmp/" + os.path.basename(urlparse.urlsplit(spark_cassandra_connector_url).path)
+
+
+    if not os.path.exists(spark_cassandra_connector_filename):
         print("Downloading Spark Cassandra Connector for Spark version {0}".format(spark_version))
-        if (spark_version.startswith("1.6")): #scala 2.10
-            return urllib.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/1.6.8-s_2.10/spark-cassandra-connector-1.6.8-s_2.10.jar", filename=connector_fn)[0]
-        elif (spark_version.startswith("2")): #scala 2.11
-            return urllib.urlretrieve("http://dl.bintray.com/spark-packages/maven/datastax/spark-cassandra-connector/2.0.3-s_2.11/spark-cassandra-connector-2.0.3-s_2.11.jar", filename=connector_fn)[0]
-        else:
-            return ""
-    else:
-        return connector_fn
+        urllib.urlretrieve(spark_cassandra_connector_url,filename=spark_cassandra_connector_filename)
+
+    return spark_cassandra_connector_filename
+
+
 
 def get_elastic_jar():
-    global elastic_fn
-    if not elastic_fn or  not os.path.exists(elastic_fn):
+    elastic_hadoop_url = "http://download.elastic.co/hadoop/elasticsearch-hadoop-5.5.0.zip"
+    elastic_hadoop_filename = "/tmp/" + os.path.basename(urlparse.urlsplit(elastic_hadoop_url).path)
+    elastic_dir = "/tmp/elasticsearch-hadoop/"
+    archive_path = "elasticsearch-hadoop-5.5.0/dist/elasticsearch-hadoop-5.5.0.jar"
+    elastic_path = os.path.join(elastic_dir, archive_path)
+    if not os.path.exists(elastic_path):
         print("Downloading ElasticSearch Hadoop integration")
-        with ZipFile(urllib.urlretrieve("http://download.elastic.co/hadoop/elasticsearch-hadoop-5.5.0.zip")[0]) as archive:
-            elastic_fn = archive.extract("elasticsearch-hadoop-5.5.0/dist/elasticsearch-hadoop-5.5.0.jar", path=elastic_dir)
-    return elastic_fn
+        urllib.urlretrieve(elastic_hadoop_url, filename=elastic_hadoop_filename)
+
+        with ZipFile(elastic_hadoop_filename) as archive:
+            archive.extract(archive_path, path=elastic_dir)
+        return elastic_path
+    else:
+        return elastic_path
 
 def make_extra_vars():
     extra_vars = dict()
@@ -399,15 +407,10 @@ elif args.action == "config":
     if args.option == 'restart-spark': #Skip installation tasks, run only detect_conf tasks
         cmdline_inventory.extend(("--skip-tags", "spark_install"))
 
+    elif args.option == 'restart-cassandra':
+        cmdline_inventory.extend(("--skip-tags", "spark_install,cassandra"))
+
     cmdline_inventory.extend(["-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_inventory, env=env)
 else:
     err("unknown action: " + args.action)
-
-if(os.path.exists(connector_fn)):
-    print("Removing Spark Cassandra Connector")
-    os.remove(connector_fn)
-
-if (os.path.exists(elastic_dir)):
-    print("Removing Elastic Hadoop Integration")
-    rmtree(elastic_dir)

@@ -292,8 +292,9 @@ There is support for on-fly setup actions. To use it you should run on existing 
 
 Supported actions:
 
-* ganglia - setups ganglia cluster
-* restart-spark - restarts spark
+* `ganglia` - setups ganglia cluster
+* `restart-spark` - restarts Apache Spark
+* `restart-cassandra` - restarts Apache Cassandra
 
 
 ## Important notes
