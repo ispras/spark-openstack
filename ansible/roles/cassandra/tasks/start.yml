@@ -1,0 +1,7 @@
+---
+
+- name: start Cassandra
+  become: "{{ hadoop_user }}"
+  #shell: "/opt/cassandra/bin/cassandra -p /home/{{ hadoop_user }}/cassandra.pid  > /home/{{ hadoop_user }}/cassandra.log"
+  shell: start-stop-daemon --start --chuid {{ hadoop_user }} --exec /opt/cassandra/bin/cassandra -m --pidfile /home/{{ hadoop_user }}/cassandra.pid -b --no-close > /home/{{ hadoop_user }}/cassandra.log 2>&1
+

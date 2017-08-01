@@ -7,47 +7,79 @@
   sudo: yes
   shell: jupyter toree install
   when: not skip_install|default(False)
+  tags:
+  - install
+  - jupyter_install
 
 - name: create config
   shell: jupyter notebook --generate-config -y
   when: not skip_install|default(False)
+  become: false
+  tags:
+  - install
+  - jupyter_install
 
 - name: change jupyter_notebook_config.py
+
   lineinfile:
     dest=/home/{{ hadoop_user }}/.jupyter/jupyter_notebook_config.py
     state=present insertafter=EOF
     line="c.NotebookApp.ip = '0.0.0.0'"
     create=true
+  tags:
+  - install
+  - jupyter_install
 
 - name: copy toree kernel config
   sudo: yes
   file: path=/usr/local/share/jupyter/kernels/toree_python{{python_version}} state=directory
-
+  tags:
+  - install
+  - jupyter_install
 - name: copy toree kernel config
   sudo: yes
   template: src=toree_kernel.json.j2 dest=/usr/local/share/jupyter/kernels/toree_python{{python_version}}/kernel.json
+  tags:
+  - install
+  - jupyter_install
 
 - name: download scala
   shell: wget http://www.scala-lang.org/files/archive/scala-2.10.4.deb
   when: not skip_install|default(False)
+  tags:
+  - install
+  - jupyter_install
 
 - name: get dependancies
   package: name=libjansi-java state=present
+  become: yes
+  tags:
+  - install
+  - jupyter_install
 
 - name: do magic
   sudo: yes
   shell: dpkg -i scala-2.10.4.deb || true
   when: not skip_install|default(False)
+  tags:
+  - install
+  - jupyter_install
 
 - name: do magic
   sudo: yes
   shell: apt-get update
   when: not skip_install|default(False)
+  tags:
+  - install
+  - jupyter_install
 
 - name: install scala
   sudo: yes
   shell: apt-get install -f -y
   when: not skip_install|default(False)
+  tags:
+  - install
+  - jupyter_install
 
 - include: service.yml
   become: yes

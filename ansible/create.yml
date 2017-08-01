@@ -3,4 +3,4 @@
 - hosts: localhost
   connection: local
   roles:
-      - { role: instances, action: action, sync: sync }
+      - { role: instances, action:  "{{action}}", sync:  "{{sync}}" }

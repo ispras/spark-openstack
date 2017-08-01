@@ -1,37 +1,48 @@
 ---
 
+- name: Add OpenJDK-r repository
+  apt_repository:
+    repo: 'ppa:openjdk-r/ppa'
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
+
 - name: update apt cache
   apt: update_cache=yes
+  when: not skip_packages|default(False)
   retries: 2
 
 - name: install packages
   package: name={{ item }} state=present
-  with_items: "{{ ubuntu_14_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
-
-- name: install packages
-  package: name={{ item }} state=present
-  with_items: "{{ ubuntu_16_04_packages }}"
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int > 15 and not skip_packages|default(False)
+  with_items: "{{ ubuntu_packages }}"
+  when: not skip_packages|default(False)
 
 
 - name: disable net.ipv6.conf.all.disable_ipv6
   sysctl: name=net.ipv6.conf.all.disable_ipv6 value=1 state=present
+  tags:
+    - prepare
 
 - name: disable net.ipv6.conf.lo.disable_ipv6
   sysctl: name=net.ipv6.conf.lo.disable_ipv6 value=1 state=present
+  tags:
+    - prepare
 
 - name: increase hard file limits
   pam_limits: domain=* limit_type=hard limit_item=nofile value=1000000
+  tags:
+    - prepare
 
 - name: increase soft file limits
   pam_limits: domain=* limit_type=soft limit_item=nofile value=1000000
 
 - name: create hadoop group
   group: name=hadoop state=present
+  tags:
+    - prepare
 
 - name: create hadoop user
   user: name={{ hadoop_user }} comment="Hadoop user" group=hadoop shell=/bin/bash
+  tags:
+    - prepare
 
 - name: get Hadoop distro (except CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/ checksum="md5:{{ hadoop_md5 }}"
@@ -40,6 +51,7 @@
 - name: get Hadoop distro (CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/
   when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}' and {{ hadoop_version }} == 'cdh4'"
+
 
 - name: distribute hadoop among slaves
   synchronize:
@@ -53,6 +65,7 @@
 
 - name: create hadoop symlink
   file: src=/usr/local/{{ hadoop_file }} dest=/usr/local/hadoop state=link
+
 
 - name: put needed swift library
   get_url: url={{ swift_download_url }} dest=/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/
@@ -91,9 +104,11 @@
 - name: create spark symlink
   file: src={{ spark_home }} dest=/usr/local/spark state=link
 
+
 - name: create extra jars directory
   file: path={{ spark_extra_jars_dir }} owner={{ hadoop_user }} group=hadoop state=directory
 
 - name: copy extra jars
   copy: src={{item.path}} dest={{ spark_extra_jars_dir }}/{{item.name}} owner={{ hadoop_user }} group=hadoop mode=0644
   with_items: "{{extra_jars}}"
+

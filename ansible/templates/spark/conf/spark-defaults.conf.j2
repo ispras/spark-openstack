@@ -20,3 +20,7 @@ spark.executor.instances  {{ n_slaves }}
 spark.tachyonStore.url tachyon://{{ active_master_ip }}:19998
 # for spark version >= 1.4.0
 spark.externalBlockStore.url tachyon://{{ active_master_ip }}:19998
+
+{% if deploy_cassandra == true %}
+spark.cassandra.connection.host={{ active_master_ip  }}
+{% endif %}
