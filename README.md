@@ -5,6 +5,8 @@ This project provides scripts for Apache Spark cluster autodeploy in any Opensta
 * Openstack Swift seamless integration
 * Apache Hadoop
 * Apache Ignite
+* Apache Cassandra
+* ElasticSearch
 * Jupyter
 * NFS share mounts
 * Ganglia
