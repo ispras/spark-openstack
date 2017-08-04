@@ -68,6 +68,7 @@ parser.add_argument("-t", "--instance-type")
 parser.add_argument("-m", "--master-instance-type", help="master instance type, defaults to same as slave instance type")
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
+parser.add_argument("--use-oracle-java", action="store_true", help="Use Oracle Java. If not set, OpenJDK is used")
 parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
 parser.add_argument("-j", "--deploy-jupyter", action='store_true', help="Should we deploy jupyter on master node.")
 parser.add_argument("-jh", "--deploy-jupyterhub",action='store_true', help="Should we deploy jupyterHub on master node")
@@ -207,6 +208,9 @@ def make_extra_vars():
     extra_vars["os_swift_password"] = args.swift_password or os.getenv('OS_SWIFT_PASSWORD') or None
     if not extra_vars["os_swift_password"]:
         del extra_vars["os_swift_password"]
+
+
+    extra_vars["use_oracle_java"] = args.use_oracle_java
 
     extra_vars["deploy_jupyter"] = args.deploy_jupyter
     if (args.deploy_jupyter):

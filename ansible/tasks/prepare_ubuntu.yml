@@ -3,7 +3,31 @@
 - name: Add OpenJDK-r repository
   apt_repository:
     repo: 'ppa:openjdk-r/ppa'
-  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False)
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False) and not use_oracle_java|default(False)
+
+- block:
+  - name: Add Oracle Java WebUpd8 repository
+    apt_repository:
+       repo: 'ppa:webupd8team/java'
+
+  - name: Accept Oracle license
+    debconf:
+      name: "{{ java_package }} "
+      question: "shared/accepted-oracle-license-v1-1"
+      value: "true"
+      vtype: "select"
+  when: use_oracle_java| default(False) and not skip_packages|default(False)
+
+- name: Select Java option to install (OpenJDK)
+  include_vars:
+      file: group_vars/all/openjdk.yml
+  when: not use_oracle_java|default(False)
+
+- name: Select Java option to install (Oracle)
+  include_vars:
+      file: group_vars/all/oracle.yml
+  when: use_oracle_java|default(False)
+
 
 - name: update apt cache
   apt: update_cache=yes
@@ -14,6 +38,11 @@
   package: name={{ item }} state=present
   with_items: "{{ ubuntu_packages }}"
   when: not skip_packages|default(False)
+
+- name: install Java
+  package: name={{ java_package }} state=present
+  when: not skip_packages|default(False)
+
 
 
 - name: disable net.ipv6.conf.all.disable_ipv6
