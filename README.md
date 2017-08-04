@@ -107,6 +107,14 @@ Running
 
 # Optional goodies
 
+## Select Java version to use on the cluster
+
+By default, OpenJDK is used
+
+If you wish to use Oracle Java, add an optional argument:
+
+     --use-oracle-java
+
 ## Enabling Openstack Swift support
 
 You may want to use Openstack Swift object storage as a drop-in addition to your HDFS. To enable it, you should specify:
