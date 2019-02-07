@@ -2,4 +2,8 @@
 
 - template: src=init.d-jupyter.j2 dest=/etc/init.d/jupyter mode=0751
 
+- file: path=/lib/systemd/system/ state=directory
+
+- template: src=systemd-jupyter.j2 dest=/lib/systemd/system/jupyter.service mode=0644
+
 - service: name=jupyter state=started enabled=yes

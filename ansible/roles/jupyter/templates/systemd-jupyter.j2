@@ -1,0 +1,12 @@
+[Unit]
+Description=Job that runs jupyter daemon
+Documentation=man:jupyter(1)
+
+[Service]
+User={{ hadoop_user }}
+WorkingDirectory=/home/{{ hadoop_user }}
+ExecStart=/usr/local/bin/jupyter notebook --no-browser
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

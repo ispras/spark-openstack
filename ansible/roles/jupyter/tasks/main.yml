@@ -59,14 +59,6 @@
 
 - name: do magic
   sudo: yes
-  shell: dpkg -i scala-2.10.4.deb || true
-  when: not skip_install|default(False)
-  tags:
-  - install
-  - jupyter_install
-
-- name: do magic
-  sudo: yes
   shell: apt-get update
   when: not skip_install|default(False)
   tags:
@@ -75,7 +67,7 @@
 
 - name: install scala
   sudo: yes
-  shell: apt-get install -f -y
+  shell: apt-get install -y scala
   when: not skip_install|default(False)
   tags:
   - install

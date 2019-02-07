@@ -43,8 +43,9 @@ spark_versions = \
 
 toree_versions = \
     {
-        "1" :  "http://apache.org/dist/incubator/toree/0.1.0-incubating/toree-pip/apache-toree-0.1.0.tar.gz",
-        "2" :  "https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapshots/dev1/toree-pip/toree-0.2.0.dev1.tar.gz"
+        "1" : "https://www.apache.org/dist/incubator/toree/0.1.0-incubating/toree-pip/apache-toree-0.1.0.tar.gz",
+        "2" : "https://www.apache.org/dist/incubator/toree/0.2.0-incubating/toree-pip/toree-0.2.0.tar.gz",
+        "3" : "https://www.apache.org/dist/incubator/toree/0.3.0-incubating/toree-pip/toree-0.3.0.tar.gz"
     }
 
 parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Openstack.',
