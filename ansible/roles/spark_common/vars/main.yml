@@ -14,29 +14,29 @@ hadoop_vars:
     archived_name: "hadoop-2.3.0.tar.gz"
     folder_name:  "hadoop-2.3.0"
     suffix: "hadoop2.3"
-    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.3.0/hadoop-openstack-2.3.0.jar"
-    swift_lib_name: "hadoop-openstack-2.3.0.jar"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.3.0-cdh5.1.7/hadoop-openstack-2.3.0-cdh5.1.7.jar"
+    swift_lib_name: "hadoop-openstack-2.3.0-cdh5.1.7.jar"
   "2.4":
     url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.4.1/hadoop-2.4.1.tar.gz"
     archived_name: "hadoop-2.4.1.tar.gz"
     folder_name:  "hadoop-2.4.1"
     suffix: "hadoop2.4"
-    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.4.1/hadoop-openstack-2.4.1.jar"
-    swift_lib_name: "hadoop-openstack-2.4.1.jar"
+    swift_lib_url: False
+    swift_lib_name: False"
   "2.6":
-    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.6.4/hadoop-2.6.4.tar.gz"
-    archived_name: "hadoop-2.6.4.tar.gz"
-    folder_name: "hadoop-2.6.4"
+    url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz"
+    archived_name: "hadoop-2.6.0.tar.gz"
+    folder_name: "hadoop-2.6.0"
     suffix: "hadoop2.6"
-    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.6.4/hadoop-openstack-2.6.4.jar"
-    swift_lib_name: "hadoop-openstack-2.6.4.jar"
+    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.6.0-cdh5.9.3/hadoop-openstack-2.6.0-cdh5.9.3.jar"
+    swift_lib_name: "hadoop-openstack-2.6.0-cdh5.9.3.jar"
   "2.7":
     url: "http://archive.apache.org/dist/hadoop/common/hadoop-2.7.3/hadoop-2.7.3.tar.gz"
     archived_name: "hadoop-2.7.3.tar.gz"
     folder_name: "hadoop-2.7.3"
     suffix: "hadoop2.7"
-    swift_lib_url: "https://repository.cloudera.com/artifactory/repo/org/apache/hadoop/hadoop-openstack/2.7.3/hadoop-openstack-2.7.3.jar"
-    swift_lib_name: "hadoop-openstack-2.7.3.jar"
+    swift_lib_url: False
+    swift_lib_name: False
   "cdh4":
     url: "https://archive.cloudera.com/cdh4/cdh/4/hadoop-2.0.0-cdh4.7.1.tar.gz"
     archived_name: "hadoop-2.0.0-cdh4.7.1.tar.gz"

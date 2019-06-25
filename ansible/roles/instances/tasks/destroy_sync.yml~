@@ -19,17 +19,6 @@
     name: "{{ item }}"
   with_items: "{{ alive_servers }}"
   retries: 3
-  async: 1000
-  poll: 0
-  register: destruction_waitress
 
-
-- name: 'Checking cluster is dead'
-  async_status: jid={{ item.ansible_job_id }}
-  register: slv
-  until: slv.finished
-  retries: 240
-  with_items: "{{ destruction_waitress.results }}"
-
-- name: destroy security group
-  include: destroy_security_group.yml
+#- name: destroy security group
+#  include: destroy_security_group.yml

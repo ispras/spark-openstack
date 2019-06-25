@@ -16,6 +16,8 @@ import urlparse
 
 spark_versions = \
     {
+        "2.3.0": {"hadoop_versions": ["2.6", "2.7"]},
+        "2.2.1": {"hadoop_versions": ["2.6", "2.7"]},
         "2.2.0": {"hadoop_versions": ["2.6", "2.7"]},
         "2.1.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.2": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
@@ -56,7 +58,7 @@ parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Ope
                                         'Look through README.md for more advanced usage examples.\n'
                                         'Apache 2.0, ISP RAS 2016 (http://ispras.ru/en).\n')
 
-parser.add_argument('action', type=str,
+parser.add_argument('act', type=str,
                     choices=["launch", "destroy", "get-master", "config"])
 parser.add_argument('cluster_name', help="Name for your cluster")
 parser.add_argument('option', nargs='?')
@@ -167,7 +169,7 @@ def get_elastic_jar():
 
 def make_extra_vars():
     extra_vars = dict()
-    extra_vars["action"] = args.action
+    extra_vars["act"] = args.act
     extra_vars["n_slaves"] = args.slaves
     extra_vars["cluster_name"] = args.cluster_name
     extra_vars["os_image"] = args.image_id
@@ -190,7 +192,7 @@ def make_extra_vars():
         exit(-1)
 
     extra_vars["hadoop_user"] = args.hadoop_user
-    if args.action == 'launch':
+    if args.act == 'launch':
         extra_vars["spark_version"] = args.spark_version
         if args.hadoop_version:
             if args.hadoop_version not in spark_versions[args.spark_version]["hadoop_versions"]:
@@ -303,7 +305,12 @@ def get_worker_mem_mb(master_ip):
     if args.spark_worker_mem_mb is not None:
         return args.spark_worker_mem_mb
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
-    slave_ram_kb = int(ssh_first_slave(master_ip, mem_command))
+
+    ssh_first_slave_ = ssh_first_slave(master_ip, mem_command)
+    if type(ssh_first_slave_) != "int":
+        print(ssh_first_slave_)
+
+    slave_ram_kb = int(ssh_first_slave_)
     slave_ram_mb = slave_ram_kb // 1024
     # Leave some RAM for the OS, Hadoop daemons, and system caches
     if slave_ram_mb > 100*1024:
@@ -353,7 +360,7 @@ cmdline.extend(unknown)
 
 extra_vars = make_extra_vars()
 
-if args.action == "launch":
+if args.act == "launch":
     cmdline_create = cmdline[:]
     cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_create)
@@ -390,7 +397,7 @@ if args.action == "launch":
     subprocess.call(cmdline_inventory)
 
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
-elif args.action == "destroy":
+elif args.act == "destroy":
     res = subprocess.check_output([ansible_cmd,
                                    "-i", "openstack_inventory.py",
                                    "--extra-vars", repr(make_extra_vars()),
@@ -400,9 +407,9 @@ elif args.action == "destroy":
     cmdline_create = cmdline[:]
     cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
     res = subprocess.call(cmdline_create)
-elif args.action == "get-master":
+elif args.act == "get-master":
     print(get_master_ip())
-elif args.action == "config":
+elif args.act == "config":
     env = dict(os.environ)
     env['ANSIBLE_ROLES_PATH'] = 'roles'
     extra_vars = make_extra_vars()
@@ -418,4 +425,4 @@ elif args.action == "config":
     cmdline_inventory.extend(["-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_inventory, env=env)
 else:
-    err("unknown action: " + args.action)
+    err("unknown action: " + args.act)

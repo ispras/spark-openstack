@@ -88,7 +88,7 @@ Running
 
     Spark-specific optional arguments:
 
-    * `--spark-version <version>` use specific Spark version. Default is 1.6.1.
+    * `--spark-version <version>` use specific Spark version. Default is 1.6.2.
     * `--hadoop-version <version>` use specific Hadoop version for Spark. Default is the latest supported in Spark.
     * `--spark-worker-mem-mb <mem>` don't auto-detect spark worker memory and use specified value, can be useful if other
         processes on slave nodes (e.g. python) need more memory, default for 10Gb-20Gb RAM slaves is to leave 2Gb to

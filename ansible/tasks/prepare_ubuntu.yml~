@@ -28,10 +28,6 @@
       file: group_vars/all/oracle.yml
   when: use_oracle_java|default(False)
 
-- name: install python
-  apt:
-    name: python
-    update_cache: yes
 
 - name: update apt cache
   apt: update_cache=yes
@@ -79,11 +75,11 @@
 
 - name: get Hadoop distro (except CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/ checksum="md5:{{ hadoop_md5 }}"
-  when: "'inventory_hostname' == 'active_master_inventory_hostname' and hadoop_version != 'cdh4'"
+  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}' and {{ hadoop_version }} != 'cdh4'"
 
 - name: get Hadoop distro (CDH4)
   get_url: url={{ hadoop_download_url }} dest=/usr/local/
-  when: "'inventory_hostname' == 'active_master_inventory_hostname' and hadoop_version == 'cdh4'"
+  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}' and {{ hadoop_version }} == 'cdh4'"
 
 
 - name: distribute hadoop among slaves
@@ -102,7 +98,7 @@
 
 - name: put needed swift library
   get_url: url={{ swift_download_url }} dest=/usr/local/{{ hadoop_file }}/share/hadoop/hdfs/lib/
-  when: "hadoop_version == 2.3 or hadoop_version == 2.6"
+  when: "{{ hadoop_version }} == 2.3 or {{ hadoop_version }} == 2.4 or {{ hadoop_version }} == 2.6 or {{ hadoop_version }} == 2.7"
 
 #- name: remove hadoop archive
 #  file: path=/usr/local/{{ hadoop_file }}.tar.gz state=absent
@@ -112,7 +108,7 @@
 
 - name: get Spark distro
   get_url: url={{ spark_download_url }} dest=/opt/ checksum="md5:{{ spark_md5 }}"
-  when: "'inventory_hostname' == 'active_master_inventory_hostname'"
+  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
 
 #- name: put spark distro to master
 #  copy: src={{ spark_arch }} dest=/opt/

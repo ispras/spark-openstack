@@ -4,10 +4,10 @@
   become: yes
   become_user: root
   roles:
-    - { role: ignite_prepare, when: deploy_ignite }
-    - { role: cassandra, when: deploy_cassandra }
+    - { role: ignite_prepare, when: deploy_ignite | bool }
+    - { role: cassandra, when: deploy_cassandra | bool }
     - spark_common
-    - { role: ignite_config, when: deploy_ignite }
+    - { role: ignite_config, when: deploy_ignite | bool }
     - mountnfs
 
 
@@ -18,16 +18,16 @@
 
 - hosts: "{{ cluster_name }}_master"
   roles:
-    - { role: jupyter, install_as_service: True, when: deploy_jupyter}
-    - { role: jupyter, python_version: 3, when: deploy_jupyter}
-    - { role: jupyterhub, python_version: 3, when: deploy_jupyterhub}
+    - { role: jupyter, install_as_service: True, when: deploy_jupyter | bool}
+    - { role: jupyter, python_version: 3, when: deploy_jupyter | bool}
+    - { role: jupyterhub, python_version: 3, when: deploy_jupyterhub | bool}
 
 
 - hosts: "{{ cluster_name }}_master"
   become: true
   become_user: root
   roles:
-    - { role: elasticsearch, when: deploy_elastic, es_instance_name: "{{ cluster_name}}", es_heap_size: "{{ es_heap_size }}", es_java_install: false,
+    - { role: elasticsearch, when: deploy_elastic | bool, es_instance_name: "{{ cluster_name}}", es_heap_size: "{{ es_heap_size }}", es_java_install: false,
     es_config: {
         cluster.name: "{{ cluster_name }}",
         discovery.zen.ping.unicast.hosts: "{{ active_master_ip }}:9300",
@@ -50,13 +50,11 @@
   - install
   - es_install
 
-
-
 - hosts: "{{ cluster_name }}_slaves"
   become: true
   become_user: root
   roles:
-    - { role: elasticsearch, when: deploy_elastic, es_instance_name: "{{ cluster_name }}", es_data_dirs: "/opt/elasticsearch", es_java_install: false,
+    - { role: elasticsearch, when: deploy_elastic | bool, es_instance_name: "{{ cluster_name }}", es_data_dirs: "/opt/elasticsearch", es_java_install: false,
     es_config: {
         discovery.zen.ping.unicast.hosts: "{{ active_master_ip }}:9300",
         http.port: 9200,

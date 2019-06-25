@@ -54,7 +54,7 @@
   tags: prepare
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
-  become: True
+  become: yes
   become_user: root
   vars:
     hadoop_user: ubuntu
