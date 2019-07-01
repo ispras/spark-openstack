@@ -71,6 +71,9 @@ parser.add_argument("-t", "--instance-type")
 parser.add_argument("-m", "--master-instance-type", help="master instance type, defaults to same as slave instance type")
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
+
+parser.add_argument("--deploy-spark", action="store_true", help="Should we deploy Spark (with Hadoop)")
+parser.add_argument("--mountnfs", action="store_true", help="Should we run mountnfs")
 parser.add_argument("--use-oracle-java", action="store_true", help="Use Oracle Java. If not set, OpenJDK is used")
 parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
 parser.add_argument("-j", "--deploy-jupyter", action='store_true', help="Should we deploy jupyter on master node.")
@@ -193,6 +196,8 @@ def make_extra_vars():
 
     extra_vars["hadoop_user"] = args.hadoop_user
     if args.act == 'launch':
+        extra_vars["deploy_spark"] = args.deploy_spark
+        extra_vars["mountnfs"] = args.mountnfs
         extra_vars["spark_version"] = args.spark_version
         if args.hadoop_version:
             if args.hadoop_version not in spark_versions[args.spark_version]["hadoop_versions"]:

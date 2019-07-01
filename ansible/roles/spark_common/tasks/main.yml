@@ -32,7 +32,7 @@
 
 - debug: var=spark_md5
 
-- include: tasks/prepare_ubuntu.yml
+- include: tasks/prepare_spark.yml
   become: yes
   become_user: root
   when: spark_common_completed is undefined
