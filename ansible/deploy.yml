@@ -4,17 +4,18 @@
   become: yes
   become_user: root
   roles:
+    - basic
     - { role: ignite_prepare, when: deploy_ignite | bool }
     - { role: cassandra, when: deploy_cassandra | bool }
-    - spark_common
+    - { role: spark_common, when: deploy_spark | bool }
     - { role: ignite_config, when: deploy_ignite | bool }
-    - mountnfs
+    - { role: mountnfs, when: mountnfs | bool }
 
 
 
 - hosts: "{{ cluster_name }}_master"
   roles:
-    - spark_master
+    - { role: spark_master, when: deploy_spark | bool }
 
 - hosts: "{{ cluster_name }}_master"
   roles:
