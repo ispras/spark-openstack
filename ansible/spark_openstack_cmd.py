@@ -104,7 +104,7 @@ parser.add_argument("--deploy-elastic", action='store_true', help="Should we dep
 parser.add_argument("--es-heap-size", default='1g', help="ElasticSearch heap size")
 
 parser.add_argument("--deploy-cassandra", action='store_true', help="Should we deploy Apache Cassandra")
-parser.add_argument("--cassandra-version", default="2.2.10", help="Apache Cassandra version to use")
+parser.add_argument("--cassandra-version", default="3.11.4", help="Apache Cassandra version to use")
 parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
