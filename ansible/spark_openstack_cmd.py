@@ -97,7 +97,7 @@ parser.add_argument("--extra-jars", action="append", help="Add/replace extra jar
 
 parser.add_argument("--deploy-ignite", action='store_true', help="Should we deploy Apache Ignite.")
 parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage of Spark worker memory to be given to Apache Ignite.")
-parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
+parser.add_argument("--ignite-version", default="2.7.5", help="Apache Ignite version to use.")
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
