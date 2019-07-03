@@ -24,7 +24,7 @@
       - pkg-config
     register: result
     ignore_errors: True
-    until: result|success
+    until: result is success
     retries: 3
     #TODO: failures are ignored
 
@@ -34,29 +34,44 @@
       dest=/tmp/
   - name: install pip
     raw: "{{apt_pkg_pref}} /tmp/get-pip.py"
-    become: True
+    become: yes
 
-
+  - name: install setuptools
+    become: yes
+    shell: "wget https://bootstrap.pypa.io/ez_setup.py -O - | python"
 
     #looks like pyparsing==2.1.2 does not work on python 3 (AttributeError: 'tuple' object has no attribute 'filename')
     #as a result of this matplotlib does not work either
-  - name: install pyparsing
-    pip: name=pyparsing version=2.1.1 state=present executable=pip{{ python_version }}
-    when: python_version|int == 3
+#  - name: install pyparsing
+#    pip: name=pyparsing state=present executable=pip{{ python_version }}
+#    when: python_version|int == 3
 
   - name: install pip packages
-    pip: name={{ item }} state=present executable=pip{{ python_version }}
-    with_items:
-      - jupyter
-      - numpy
-      - pandas
-      - matplotlib
-      - scipy
-      - seaborn
-      - scikit-learn
+    become: yes
+    pip:
+      name:
+        - jupyter
+        - numpy
+        - pandas
+        - matplotlib
+        - scipy
+        - seaborn
+        - scikit-learn
+        - pyparsing
+      state: present
+      executable: pip{{ python_version }}
+#    with_items:
+#      - jupyter
+#      - numpy
+#      - pandas
+#      - matplotlib
+#      - scipy
+#      - seaborn
+#      - scikit-learn
+#      - pyparsing
     register: result
     ignore_errors: True
-    until: result|success
+    until: result is success
     retries: 3
     #TODO: failures are ignored
 
@@ -65,7 +80,7 @@
 
   # NOTE: toree_version is maintained in spark_openstack_cmd.py
   - name: install toree
-    pip: name="{{ toree_version }}" state=present executable=pip{{ python_version }}
+    pip: name=toree state=present executable=pip{{ python_version }}
   become: True
   become_user: root
   tags:
