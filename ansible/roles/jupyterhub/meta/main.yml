@@ -1,3 +1,5 @@
 ---
 dependencies:
+  - { role: spark_common }
+  - { role: jupyter, install_as_service: True }
   - { role: jupyter, python_version: 3}
