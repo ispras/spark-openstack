@@ -1,5 +1,11 @@
 ---
 
+- hosts: "localhost"
+  roles:
+    - os_facts
+  tags:
+    - prepare_inventory
+
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   become: yes
   become_user: root

@@ -277,23 +277,37 @@ def err(msg):
     sys.exit(1)
 
 
+# def parse_host_ip(resp):
+#     """parse ansible debug output with var=hostvars[inventory_hostname].ansible_ssh_host and return host"""
+#     parts1 = resp.split("=>")
+#     if len(parts1) != 2: err("unexpected ansible output1")
+#     parts2 = parts1[1].split(":")
+#     if len(parts2) != 2: err("unexpected ansible output2")
+#     parts3 = parts2[1].split('"')
+#     if len(parts3) != 3: err("unexpected ansible output3")
+#     return parts3[1]
+# def get_master_ip():
+#     res = subprocess.check_output([ansible_cmd,
+#                                    "-i", "openstack_inventory.py",
+#                                    "--extra-vars", repr(make_extra_vars()),
+#                                    "-m", "debug", "-a", "var=hostvars[inventory_hostname].ansible_ssh_host",
+#                                    args.cluster_name + "-master"])
+#     return parse_host_ip(res)
+
 def parse_host_ip(resp):
     """parse ansible debug output with var=hostvars[inventory_hostname].ansible_ssh_host and return host"""
     parts1 = resp.split("=>")
     if len(parts1) != 2: err("unexpected ansible output")
     parts2 = parts1[1].split(":")
-    if len(parts2) != 2: err("unexpected ansible output")
+    if len(parts2) != 3: err("unexpected ansible output")
     parts3 = parts2[1].split('"')
     if len(parts3) != 3: err("unexpected ansible output")
     return parts3[1]
 
-
 def get_master_ip():
-    res = subprocess.check_output([ansible_cmd,
-                                   "-i", "openstack_inventory.py",
+    res = subprocess.check_output([ansible_playbook_cmd,
                                    "--extra-vars", repr(make_extra_vars()),
-                                   "-m", "debug", "-a", "var=hostvars[inventory_hostname].ansible_ssh_host",
-                                   args.cluster_name + "-master"])
+                                   "get_master.yml"])
     return parse_host_ip(res)
 
 def ssh_output(host, cmd):
@@ -370,12 +384,8 @@ if args.act == "launch":
     cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_create)
 
-    with open(os.devnull, "w") as devnull:
-        subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
-
-
     cmdline_initial_setup_status = cmdline[:]
-    cmdline_initial_setup_status.extend([ "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_initial_setup_status.extend(["deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
     initial_setup_status = subprocess.call(cmdline_initial_setup_status)
 
     if initial_setup_status != 0:
@@ -398,13 +408,12 @@ if args.act == "launch":
 
     extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
     cmdline_inventory = cmdline[:]
-    cmdline_inventory.extend(["-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_inventory.extend(["-v", "deploy.yml", "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_inventory)
 
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.act == "destroy":
     res = subprocess.check_output([ansible_cmd,
-                                   "-i", "openstack_inventory.py",
                                    "--extra-vars", repr(make_extra_vars()),
                                    "-m", "debug", "-a", "var=groups['%s_slaves']" % args.cluster_name,
                                    args.cluster_name + "-master"])
@@ -415,8 +424,8 @@ elif args.act == "destroy":
 elif args.act == "get-master":
     print(get_master_ip())
 elif args.act == "config":
-    env = dict(os.environ)
-    env['ANSIBLE_ROLES_PATH'] = 'roles'
+    # env = dict(os.environ)
+    # env['ANSIBLE_ROLES_PATH'] = 'roles'
     extra_vars = make_extra_vars()
     extra_vars['roles_dir'] = '../roles'
 
@@ -427,7 +436,7 @@ elif args.act == "config":
     elif args.option == 'restart-cassandra':
         cmdline_inventory.extend(("--skip-tags", "spark_install,cassandra"))
 
-    cmdline_inventory.extend(["-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
-    subprocess.call(cmdline_inventory, env=env)
+    cmdline_inventory.extend(["%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_inventory)
 else:
     err("unknown action: " + args.act)

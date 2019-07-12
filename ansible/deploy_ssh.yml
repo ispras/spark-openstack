@@ -1,6 +1,11 @@
 ---
 
 - hosts: localhost
+  roles:
+    - os_facts
+  tags: prepare_inventory
+
+- hosts: localhost
   tasks:
     - name: create directory for ssh-keys if doesn't exist
       file: path=files/keys state=directory
