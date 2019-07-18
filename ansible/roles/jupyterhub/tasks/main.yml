@@ -1,19 +1,31 @@
 ---
 
+- name: Install necessary packages
+  become: yes
+  apt: name={{ item }} state=present
+  with_items:
+    - curl
+    - python-software-properties
+
+- name: Add nodejs LTS repo
+  become: yes
+  shell: "curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash - "
+
 - debug: var=python_version
 - block:
   - name: install packages
-    sudo: yes
+    become: yes
     apt: name={{ item }} state=present
     with_items:
-      - npm
-      - nodejs-legacy
+      - nodejs
 
-  - sudo: yes
-    shell: npm install -g configurable-http-proxy
+  - become: yes
+    npm:
+      global: true
+      name: configurable-http-proxy
 
   - name: install pip packages
-    sudo: yes
+    become: yes
     pip: name={{ item }} state=present executable=pip{{ python_version }}
     with_items:
       - jupyterhub

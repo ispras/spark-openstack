@@ -1,12 +1,16 @@
 ---
 
-
+- hosts: localhost
+  roles:
+    - os_facts
+  tasks:
+    - debug: var=active_master
 
 - hosts: "{{ cluster_name }}_master"
   roles:
     - { role: spark_common, detect_conf: True }
   tasks:
-    - include: ../tasks/stop_all.yml
+    - include: tasks/stop_all.yml
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   become: True
@@ -26,4 +30,4 @@
   roles:
     - { role: spark_common, detect_conf: True }
   tasks:
-    - include: ../tasks/start_all.yml
+    - include: tasks/start_all.yml

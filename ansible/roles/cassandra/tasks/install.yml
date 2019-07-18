@@ -10,15 +10,17 @@
 
 
 - name: Download Cassandra tarball
-  get_url: url={{ cassandra_download_url }} dest=/opt/ checksum="sha512:{{ cassandra_sha512.split()[0] }}"
-  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
+  local_action: get_url url={{ cassandra_download_url }} dest=files/ checksum="sha512:{{ cassandra_sha512.split()[0] }}"
+  become: False
+#  when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
 
 
 - name: distribute Cassandra tarball
   synchronize:
-    src: "/opt/{{ cassandra_file }}"
+    src: "files/{{ cassandra_file }}"
     dest: "/opt/{{ cassandra_file }}"
-  delegate_to: "{{ active_master_inventory_hostname }}"
+    checksum: yes
+#  delegate_to: "{{ active_master_inventory_hostname }}"
 
 - name: unpack Cassandra
   unarchive: copy=no src=/opt/{{ cassandra_file }} dest=/opt
