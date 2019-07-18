@@ -1,0 +1,8 @@
+---
+
+- name: Get {{ host_role }} CPUs
+  command: nproc
+  register: cores
+
+- name: Set cores fact
+  set_fact: "spark_worker_cores={{ cores.stdout }}"

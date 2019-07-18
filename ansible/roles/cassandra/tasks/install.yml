@@ -19,6 +19,7 @@
   synchronize:
     src: "files/{{ cassandra_file }}"
     dest: "/opt/{{ cassandra_file }}"
+    checksum: yes
 #  delegate_to: "{{ active_master_inventory_hostname }}"
 
 - name: unpack Cassandra

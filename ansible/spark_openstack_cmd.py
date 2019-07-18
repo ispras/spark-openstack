@@ -72,6 +72,7 @@ parser.add_argument("-m", "--master-instance-type", help="master instance type, 
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
 
+parser.add_argument("--create", action="store_true", help="Note that cluster should be created")
 parser.add_argument("--deploy-spark", action="store_true", help="Should we deploy Spark (with Hadoop)")
 parser.add_argument("--mountnfs", action="store_true", help="Should we run mountnfs")
 parser.add_argument("--use-oracle-java", action="store_true", help="Use Oracle Java. If not set, OpenJDK is used")
@@ -196,6 +197,7 @@ def make_extra_vars():
 
     extra_vars["hadoop_user"] = args.hadoop_user
     if args.act == 'launch':
+        extra_vars["create_cluster"] = args.create
         extra_vars["deploy_spark"] = args.deploy_spark
         extra_vars["mountnfs"] = args.mountnfs
         extra_vars["spark_version"] = args.spark_version
@@ -381,36 +383,9 @@ extra_vars = make_extra_vars()
 
 if args.act == "launch":
     cmdline_create = cmdline[:]
-    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_create.extend(["-v", "main.yml", "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_create)
-
-    cmdline_initial_setup_status = cmdline[:]
-    cmdline_initial_setup_status.extend(["deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
-    initial_setup_status = subprocess.call(cmdline_initial_setup_status)
-
-    if initial_setup_status != 0:
-        print("One of your instances didn't come up; please do the following:")
-        print("    1. Check your instances states in your Openstack dashboard; if there are any in ERROR state, terminate them")
-        print("    2. Rerun the script (no need for destroy; it will continue working skipping the work already done)")
-        exit(initial_setup_status)
     master_ip = get_master_ip()
-    ssh_first_slave(master_ip, "echo 1")
-    if not args.deploy_ignite:
-        extra_vars["spark_worker_mem_mb"] = get_worker_mem_mb(master_ip)
-        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
-    else:
-        worker_mem_mb = get_worker_mem_mb(master_ip)
-        ignite_mem_ratio = args.ignite_memory/100.0
-        #FIXME: improve rounding
-        extra_vars["spark_worker_mem_mb"] = int(worker_mem_mb*(1-ignite_mem_ratio))
-        extra_vars["ignite_mem_mb"] = int(worker_mem_mb*ignite_mem_ratio)
-        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
-
-    extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    cmdline_inventory = cmdline[:]
-    cmdline_inventory.extend(["-v", "deploy.yml", "--extra-vars", repr(extra_vars)])
-    subprocess.call(cmdline_inventory)
-
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
 elif args.act == "destroy":
     res = subprocess.check_output([ansible_cmd,
@@ -419,13 +394,11 @@ elif args.act == "destroy":
                                    args.cluster_name + "-master"])
     extra_vars = make_extra_vars()
     cmdline_create = cmdline[:]
-    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
-    res = subprocess.call(cmdline_create)
+    cmdline_create.extend(["main.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_create)
 elif args.act == "get-master":
     print(get_master_ip())
 elif args.act == "config":
-    # env = dict(os.environ)
-    # env['ANSIBLE_ROLES_PATH'] = 'roles'
     extra_vars = make_extra_vars()
     extra_vars['roles_dir'] = '../roles'
 
