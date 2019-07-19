@@ -1,0 +1,88 @@
+---
+
+- name: Add OpenJDK-r repository
+  apt_repository:
+    repo: 'ppa:openjdk-r/ppa'
+  when: ansible_distribution == 'Ubuntu' and ansible_lsb.major_release|int <= 15 and not skip_packages|default(False) and not use_oracle_java|default(False)
+
+- block:
+    - name: Add Oracle Java WebUpd8 repository
+      apt_repository:
+        repo: 'ppa:webupd8team/java'
+
+    - name: Accept Oracle license
+      debconf:
+        name: "{{ java_package }} "
+        question: "shared/accepted-oracle-license-v1-1"
+        value: "true"
+        vtype: "select"
+  when: use_oracle_java| default(False) and not skip_packages|default(False)
+
+- name: Select Java option to install (OpenJDK)
+  include_vars:
+    file: group_vars/all/openjdk.yml
+  when: not use_oracle_java|default(False)
+
+- name: Select Java option to install (Oracle)
+  include_vars:
+    file: group_vars/all/oracle.yml
+  when: use_oracle_java|default(False)
+
+- name: install python
+  become: yes
+  apt:
+    name: python
+    update_cache: yes
+
+- name: update apt cache
+  become: yes
+  apt: update_cache=yes
+  when: not skip_packages|default(False)
+  retries: 2
+
+- name: install packages
+  become: yes
+  package: name={{ item }} state=present
+  with_items: "{{ ubuntu_packages }}"
+  when: not skip_packages|default(False)
+
+- name: install Java
+  become: yes
+  package: name={{ java_package }} state=present
+  when: not skip_packages|default(False)
+
+
+
+- name: disable net.ipv6.conf.all.disable_ipv6
+  become: yes
+  sysctl: name=net.ipv6.conf.all.disable_ipv6 value=1 state=present
+  tags:
+    - prepare
+
+- name: disable net.ipv6.conf.lo.disable_ipv6
+  become: yes
+  sysctl: name=net.ipv6.conf.lo.disable_ipv6 value=1 state=present
+  tags:
+    - prepare
+
+- name: increase hard file limits
+  become: yes
+  pam_limits: domain=* limit_type=hard limit_item=nofile value=1000000
+  tags:
+    - prepare
+
+- name: increase soft file limits
+  become: yes
+  pam_limits: domain=* limit_type=soft limit_item=nofile value=1000000
+
+- name: create hadoop group
+  become: yes
+  group: name=hadoop state=present
+  tags:
+    - prepare
+
+- name: create hadoop user
+  become: yes
+  user: name={{ hadoop_user }} comment="Hadoop user" group=hadoop shell=/bin/bash
+  tags:
+    - prepare

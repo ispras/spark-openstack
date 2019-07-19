@@ -1,4 +1,8 @@
 ---
+- hosts: localhost
+  roles:
+    - os_facts
+
 - name: Restart Cassandra
   hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   roles:

@@ -7,6 +7,7 @@
   - cassandra_install
 
 - include: config.yml
+  become: yes
   tags:
   - install
   - cassandra
@@ -14,6 +15,7 @@
   - cassandra_config
 
 - include: start.yml
+  become: yes
   when: not restart|default(False)
   tags:
   - start
@@ -21,6 +23,7 @@
   - cassandra_start
 
 - include: restart.yml
+  become: yes
   when: restart|default(False)
   tags:
   - restart

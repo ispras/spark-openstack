@@ -4,7 +4,7 @@
   when: not skip_install|default(False)
 
 - name: setup toree
-  sudo: yes
+  become: yes
   shell: jupyter toree install
   when: not skip_install|default(False)
   tags:
@@ -31,13 +31,13 @@
   - jupyter_install
 
 - name: copy toree kernel config
-  sudo: yes
+  become: yes
   file: path=/usr/local/share/jupyter/kernels/toree_python{{python_version}} state=directory
   tags:
   - install
   - jupyter_install
 - name: copy toree kernel config
-  sudo: yes
+  become: yes
   template: src=toree_kernel.json.j2 dest=/usr/local/share/jupyter/kernels/toree_python{{python_version}}/kernel.json
   tags:
   - install
@@ -50,7 +50,7 @@
   - install
   - jupyter_install
 
-- name: get dependancies
+- name: get dependencies
   package: name=libjansi-java state=present
   become: yes
   tags:
@@ -58,7 +58,7 @@
   - jupyter_install
 
 - name: do magic
-  sudo: yes
+  become: yes
   shell: apt-get update
   when: not skip_install|default(False)
   tags:
@@ -66,7 +66,7 @@
   - jupyter_install
 
 - name: install scala
-  sudo: yes
+  become: yes
   shell: apt-get install -y scala
   when: not skip_install|default(False)
   tags:

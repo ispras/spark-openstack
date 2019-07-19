@@ -1,0 +1,119 @@
+---
+
+- hosts: localhost
+  tasks:
+    - include_role:
+        name: create
+      when: create_cluster is defined or act == "destroy"
+    - include_role:
+        name: os_facts
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  tasks:
+    - include_role:
+        name: deploy_ssh
+      vars:
+        hadoop_user: ubuntu
+      when: create_cluster is defined
+    - include_role:
+            name: cpus
+    - include_role:
+            name: mem_mb
+
+
+- hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
+  become: yes
+  tasks:
+    - name: install base
+      include_role:
+        name: basic
+    - name: install Spark
+      include_role:
+        name: spark_common
+      when: deploy_spark
+    - name: install cassandra
+      include_role:
+        name: cassandra
+      when: deploy_cassandra
+    - name: install ignite
+      include_role:
+        name:
+          - ignite_prapare
+          - ignite_config
+      when: deploy_ignite
+    - name: mountnfs
+      include_role:
+        name: mountnfs
+      when: mountnfs
+
+- hosts: "{{ cluster_name }}_master"
+  tasks:
+    - include_role:
+        name: spark_master
+      when: deploy_spark
+    - include_role:
+        name: jupyter
+      vars:
+        install_as_service: True
+      when: deploy_jupyter
+    - include_role:
+        name: jupyter
+      vars:
+        install_as_service: True
+      when: deploy_jupyter
+    - include_role:
+        name: jupyterhub
+      vars:
+        python_version: 3
+      when: deploy_jupyterhub
+
+- hosts: "{{ cluster_name }}_master"
+  become: yes
+  tasks:
+    - include_role:
+        name: elasticsearch
+      vars:
+        es_instance_name: "{{ cluster_name }}"
+        es_heap_size: "{{ es_heap_size }}"
+        es_java_install: false
+        es_config:
+          cluster.name: "{{ cluster_name }}"
+          discovery.zen.ping.unicast.hosts: "{{ active_master_ip }}:9300"
+          http.port: 9200
+          transport.tcp.port: 9300
+          node.data: false
+          node.master: true
+          bootstrap.memory_lock: false
+          network.host: "0"
+        es_scripts: false
+        es_templates: false
+        es_version_lock: false
+        es_plugins:
+          plugin: ingest-geoip
+      when: deploy_elastic
+
+- hosts: "{{ cluster_name }}_slaves"
+  become: yes
+  tasks:
+    - include_role:
+        name: elasticsearch
+      vars:
+        es_instance_name: "{{ cluster_name }}"
+        es_data_dirs: "/opt/elasticsearch"
+        es_java_install: false
+        es_config:
+          discovery.zen.ping.unicast.hosts: "{{ active_master_ip }}:9300"
+          http.port: 9200
+          transport.tcp.port: 9300
+          node.data: true
+          node.master: false
+          bootstrap.memory_lock: false
+          cluster.name: "{{ cluster_name }}"
+          network.host: "0"
+        es_scripts: false
+        es_templates: false
+        es_version_lock: false
+        es_api_port: 9200
+        es_plugins:
+          plugin: ingest-geoip
+      when: deploy_elastic

@@ -5,7 +5,7 @@
 - name: install packages
   apt: name=unzip
 
-- include: tasks/deploy_arch.yml deparch_file={{ignite_file}} deparch_ext=.zip deparch_download_url={{ignite_download_url}} deparch_dest=/opt deparch_link=ignite
+- include: tasks/deploy_arch.yml deparch_file={{ignite_file}} deparch_ext=.zip deparch_download_url={{ignite_download_url}} deparch_dest=files/ deparch_link=ignite
 
 - name: deploy ignite-spark-cp.sh
   template: src=templates/ignite/ignite-spark-cp.sh.j2 dest=/tmp/ignite-spark-cp.sh mode="ugo=rx"

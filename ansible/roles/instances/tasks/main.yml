@@ -1,4 +1,0 @@
----
-
-- include: "{{action + '_' + sync}}.yml"
-  tags: create
