@@ -23,7 +23,7 @@ You are welcome to contribute.
 Installation
 ============
 
-1. Install ansible version >= 2.2 and < 2.3.0 (it's unsupported yet).
+1. Install ansible. Last updates works well with version 2.8.2
 
     It looks like Openstack stuff in Ansible will only work with Python 2.7, so if Ansible is already installed for Python 3, you should use virtual environment with Python 2 or be careful with your $PATH (path for Ansible for Python2 should be the first one)
 
@@ -67,10 +67,10 @@ Configuration
 Running
 =======
 
-* To create a cluster, source your <project>-openrc.sh file and run
+* To create a cluster, source your <project>-openrc.sh file and run 
 
         cd spark-openstack
-        ./spark-openstack -k <key-pair-name> -i <private-key> -s <n-slaves> \
+        ./spark-openstack --create -k <key-pair-name> -i <private-key> -s <n-slaves> \
            -t <instance-type> -a <os-image-id> -n <virtual-network> -f <floating-ip-pool> \
            [--async] [--yarn] launch <cluster-name>
 
@@ -86,9 +86,14 @@ Running
     * `--async` - launch Openstack instances in async way (preferred, but can cause problems on Openstack before Kilo)
     * `--yarn` - Spark-on-YARN deploy mode  (has overhead on memory so do not use it if you don't know why)
 
+    With this command would be created cluster with choosed number of slaves. Arguments to Spark autodeploy:
+
+    * `--deploy-spark` - Deploy Spark with default version (1.6.2) and Hadoop with default version 2.6
+    * `--mountfnfs` - Mount shared directory.
+
     Spark-specific optional arguments:
 
-    * `--spark-version <version>` use specific Spark version. Default is 1.6.1.
+    * `--spark-version <version>` use specific Spark version. Default is 1.6.2.
     * `--hadoop-version <version>` use specific Hadoop version for Spark. Default is the latest supported in Spark.
     * `--spark-worker-mem-mb <mem>` don't auto-detect spark worker memory and use specified value, can be useful if other
         processes on slave nodes (e.g. python) need more memory, default for 10Gb-20Gb RAM slaves is to leave 2Gb to
@@ -96,7 +101,7 @@ Running
     * `--spark-master-instance-type <instance-type>` use another instance flavor for master
 
     Example:
-                ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+                ./spark-openstack --create --deploy-spark -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                launch borisenko-cluster
 
@@ -107,6 +112,9 @@ Running
 
     all parameter values are same as for `launch` command
 
+* All tools can be installed both during cluster creation and on an existing cluster.
+  If a cluster has already been created, remove the option `--create`. This will speed up the deployment process.
+  
 # Optional goodies
 
 ## Select Java version to use on the cluster
@@ -128,7 +136,7 @@ You may want to use Openstack Swift object storage as a drop-in addition to your
 
 Usage example:
 
-    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+    ./spark-openstack --create -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --swift-username shared --swift-password password \
                launch borisenko-cluster
@@ -151,14 +159,15 @@ You may want to use Jupyter notebook engine. To enable it you should use optiona
 
     --deploy-jupyter True
 
-Usage example:
+Usage example for deploy jupyter on created cluster:
 
     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --deploy-jupyter True \
                launch borisenko-cluster
 
-Jupyter notebook should be started automatically after cluster is launched.
+Jupyter notebook should be started automatically after cluster deploying.
+Also jupyter may be deployed when creating a cluster.
 
 Master host IP address can be obtained by running `./spark-openstack get-master <cluster-name>`.
 Alternatively, you can look for lines like `"msg": "jupyter install finished on 10.10.17.136 (python_version=3)"` in the console output.
@@ -191,7 +200,7 @@ optional arguments:
 Where `<share-path>` is the address of NFS share (e.g. `1.1.1.1:/share/`) and
 `<where-to-mount>` is the path in your cluster machines where the share will be mounted (e.g. `/mnt/share`)
 
-Usage example:
+Usage example on created cluster:
 
     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
@@ -227,7 +236,7 @@ optional arguments:
 
 Usage example:
 
-    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+    ./spark-openstack --create -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --deploy-ignite --ignite-memory 30\
                launch borisenko-cluster
@@ -258,7 +267,7 @@ Cassandra 3.11.0 is deployed by default
 
 Usage example:
 
-     ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+     ./spark-openstack --create -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --deploy-cassandra\
                launch borisenko-cluster
@@ -285,7 +294,7 @@ Default heap size is `1g` (1 GB)
 
 Usage example:
 
-    ./spark-openstack -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+    ./spark-openstack --create -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --deploy-elastic\
                launch borisenko-cluster
