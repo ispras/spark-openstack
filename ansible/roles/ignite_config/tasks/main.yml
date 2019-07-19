@@ -14,6 +14,6 @@
 #FIXME: should be a separate task
 #Spark Executors need to write to Ignite work directory, so this should be run as the same user
 - shell: start-stop-daemon --start --chuid {{ hadoop_user }} --exec {{ignite_home}}/bin/ignite.sh -m --pidfile /home/{{ hadoop_user }}/ignite.pid -b --no-close > /home/{{ hadoop_user }}/ignite.log 2>&1
-  when: "'{{ inventory_hostname }}' != '{{ active_master_inventory_hostname }}'"
+  when: "'inventory_hostname' != 'active_master_inventory_hostname' | bool"
   tags:
     - start

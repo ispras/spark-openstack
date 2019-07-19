@@ -16,6 +16,8 @@ import urlparse
 
 spark_versions = \
     {
+        "2.3.0": {"hadoop_versions": ["2.6", "2.7"]},
+        "2.2.1": {"hadoop_versions": ["2.6", "2.7"]},
         "2.2.0": {"hadoop_versions": ["2.6", "2.7"]},
         "2.1.0": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
         "2.0.2": {"hadoop_versions": ["2.3", "2.4", "2.6", "2.7"]},
@@ -56,7 +58,7 @@ parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Ope
                                         'Look through README.md for more advanced usage examples.\n'
                                         'Apache 2.0, ISP RAS 2016 (http://ispras.ru/en).\n')
 
-parser.add_argument('action', type=str,
+parser.add_argument('act', type=str,
                     choices=["launch", "destroy", "get-master", "config"])
 parser.add_argument('cluster_name', help="Name for your cluster")
 parser.add_argument('option', nargs='?')
@@ -69,6 +71,10 @@ parser.add_argument("-t", "--instance-type")
 parser.add_argument("-m", "--master-instance-type", help="master instance type, defaults to same as slave instance type")
 parser.add_argument("-a", "--image-id")
 parser.add_argument("-w", help="ignored")
+
+parser.add_argument("--create", action="store_true", help="Note that cluster should be created")
+parser.add_argument("--deploy-spark", action="store_true", help="Should we deploy Spark (with Hadoop)")
+parser.add_argument("--mountnfs", action="store_true", help="Should we run mountnfs")
 parser.add_argument("--use-oracle-java", action="store_true", help="Use Oracle Java. If not set, OpenJDK is used")
 parser.add_argument("--spark-worker-mem-mb", type=int, help="force worker memory value in megabytes (e.g. 14001)")
 parser.add_argument("-j", "--deploy-jupyter", action='store_true', help="Should we deploy jupyter on master node.")
@@ -92,14 +98,14 @@ parser.add_argument("--extra-jars", action="append", help="Add/replace extra jar
 
 parser.add_argument("--deploy-ignite", action='store_true', help="Should we deploy Apache Ignite.")
 parser.add_argument("--ignite-memory", default=50, type=float, help="Percentage of Spark worker memory to be given to Apache Ignite.")
-parser.add_argument("--ignite-version", default="1.7.0", help="Apache Ignite version to use.")
+parser.add_argument("--ignite-version", default="2.7.5", help="Apache Ignite version to use.")
 
 parser.add_argument("--yarn", action='store_true', help="Should we deploy using Apache YARN.")
 parser.add_argument("--deploy-elastic", action='store_true', help="Should we deploy ElasticSearch")
 parser.add_argument("--es-heap-size", default='1g', help="ElasticSearch heap size")
 
 parser.add_argument("--deploy-cassandra", action='store_true', help="Should we deploy Apache Cassandra")
-parser.add_argument("--cassandra-version", default="2.2.10", help="Apache Cassandra version to use")
+parser.add_argument("--cassandra-version", default="3.11.4", help="Apache Cassandra version to use")
 parser.add_argument("--skip-packages", action='store_true',
                     help="Skip package installation (Java, rsync, etc). Image must contain all required packages.")
 parser.add_argument("--async", action="store_true",
@@ -167,7 +173,7 @@ def get_elastic_jar():
 
 def make_extra_vars():
     extra_vars = dict()
-    extra_vars["action"] = args.action
+    extra_vars["act"] = args.act
     extra_vars["n_slaves"] = args.slaves
     extra_vars["cluster_name"] = args.cluster_name
     extra_vars["os_image"] = args.image_id
@@ -190,7 +196,10 @@ def make_extra_vars():
         exit(-1)
 
     extra_vars["hadoop_user"] = args.hadoop_user
-    if args.action == 'launch':
+    if args.act == 'launch':
+        extra_vars["create_cluster"] = args.create
+        extra_vars["deploy_spark"] = args.deploy_spark
+        extra_vars["mountnfs"] = args.mountnfs
         extra_vars["spark_version"] = args.spark_version
         if args.hadoop_version:
             if args.hadoop_version not in spark_versions[args.spark_version]["hadoop_versions"]:
@@ -270,23 +279,37 @@ def err(msg):
     sys.exit(1)
 
 
+# def parse_host_ip(resp):
+#     """parse ansible debug output with var=hostvars[inventory_hostname].ansible_ssh_host and return host"""
+#     parts1 = resp.split("=>")
+#     if len(parts1) != 2: err("unexpected ansible output1")
+#     parts2 = parts1[1].split(":")
+#     if len(parts2) != 2: err("unexpected ansible output2")
+#     parts3 = parts2[1].split('"')
+#     if len(parts3) != 3: err("unexpected ansible output3")
+#     return parts3[1]
+# def get_master_ip():
+#     res = subprocess.check_output([ansible_cmd,
+#                                    "-i", "openstack_inventory.py",
+#                                    "--extra-vars", repr(make_extra_vars()),
+#                                    "-m", "debug", "-a", "var=hostvars[inventory_hostname].ansible_ssh_host",
+#                                    args.cluster_name + "-master"])
+#     return parse_host_ip(res)
+
 def parse_host_ip(resp):
     """parse ansible debug output with var=hostvars[inventory_hostname].ansible_ssh_host and return host"""
     parts1 = resp.split("=>")
     if len(parts1) != 2: err("unexpected ansible output")
     parts2 = parts1[1].split(":")
-    if len(parts2) != 2: err("unexpected ansible output")
+    if len(parts2) != 3: err("unexpected ansible output")
     parts3 = parts2[1].split('"')
     if len(parts3) != 3: err("unexpected ansible output")
     return parts3[1]
 
-
 def get_master_ip():
-    res = subprocess.check_output([ansible_cmd,
-                                   "-i", "openstack_inventory.py",
+    res = subprocess.check_output([ansible_playbook_cmd,
                                    "--extra-vars", repr(make_extra_vars()),
-                                   "-m", "debug", "-a", "var=hostvars[inventory_hostname].ansible_ssh_host",
-                                   args.cluster_name + "-master"])
+                                   "get_master.yml"])
     return parse_host_ip(res)
 
 def ssh_output(host, cmd):
@@ -303,7 +326,12 @@ def get_worker_mem_mb(master_ip):
     if args.spark_worker_mem_mb is not None:
         return args.spark_worker_mem_mb
     mem_command = "cat /proc/meminfo | grep MemTotal | awk '{print $2}'"
-    slave_ram_kb = int(ssh_first_slave(master_ip, mem_command))
+
+    ssh_first_slave_ = ssh_first_slave(master_ip, mem_command)
+    if type(ssh_first_slave_) != "int":
+        print(ssh_first_slave_)
+
+    slave_ram_kb = int(ssh_first_slave_)
     slave_ram_mb = slave_ram_kb // 1024
     # Leave some RAM for the OS, Hadoop daemons, and system caches
     if slave_ram_mb > 100*1024:
@@ -353,58 +381,24 @@ cmdline.extend(unknown)
 
 extra_vars = make_extra_vars()
 
-if args.action == "launch":
+if args.act == "launch":
     cmdline_create = cmdline[:]
-    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
+    cmdline_create.extend(["-v", "main.yml", "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_create)
-
-    with open(os.devnull, "w") as devnull:
-        subprocess.call(["./openstack_inventory.py", "--refresh", "--list"], stdout=devnull) # refresh openstack cache
-
-
-    cmdline_initial_setup_status = cmdline[:]
-    cmdline_initial_setup_status.extend([ "-i", "openstack_inventory.py", "deploy_ssh.yml", "--extra-vars", repr(extra_vars)])
-    initial_setup_status = subprocess.call(cmdline_initial_setup_status)
-
-    if initial_setup_status != 0:
-        print("One of your instances didn't come up; please do the following:")
-        print("    1. Check your instances states in your Openstack dashboard; if there are any in ERROR state, terminate them")
-        print("    2. Rerun the script (no need for destroy; it will continue working skipping the work already done)")
-        exit(initial_setup_status)
     master_ip = get_master_ip()
-    ssh_first_slave(master_ip, "echo 1")
-    if not args.deploy_ignite:
-        extra_vars["spark_worker_mem_mb"] = get_worker_mem_mb(master_ip)
-        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
-    else:
-        worker_mem_mb = get_worker_mem_mb(master_ip)
-        ignite_mem_ratio = args.ignite_memory/100.0
-        #FIXME: improve rounding
-        extra_vars["spark_worker_mem_mb"] = int(worker_mem_mb*(1-ignite_mem_ratio))
-        extra_vars["ignite_mem_mb"] = int(worker_mem_mb*ignite_mem_ratio)
-        extra_vars["yarn_master_mem_mb"] = get_master_mem(master_ip)
-
-    extra_vars["spark_worker_cores"] = get_slave_cpus(master_ip)
-    cmdline_inventory = cmdline[:]
-    cmdline_inventory.extend(["-v", "-i", "openstack_inventory.py", "deploy.yml", "--extra-vars", repr(extra_vars)])
-    subprocess.call(cmdline_inventory)
-
     print("Cluster launched successfully; Master IP is %s"%(master_ip))
-elif args.action == "destroy":
+elif args.act == "destroy":
     res = subprocess.check_output([ansible_cmd,
-                                   "-i", "openstack_inventory.py",
                                    "--extra-vars", repr(make_extra_vars()),
                                    "-m", "debug", "-a", "var=groups['%s_slaves']" % args.cluster_name,
                                    args.cluster_name + "-master"])
     extra_vars = make_extra_vars()
     cmdline_create = cmdline[:]
-    cmdline_create.extend(["create.yml", "--extra-vars", repr(extra_vars)])
-    res = subprocess.call(cmdline_create)
-elif args.action == "get-master":
+    cmdline_create.extend(["main.yml", "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_create)
+elif args.act == "get-master":
     print(get_master_ip())
-elif args.action == "config":
-    env = dict(os.environ)
-    env['ANSIBLE_ROLES_PATH'] = 'roles'
+elif args.act == "config":
     extra_vars = make_extra_vars()
     extra_vars['roles_dir'] = '../roles'
 
@@ -415,7 +409,7 @@ elif args.action == "config":
     elif args.option == 'restart-cassandra':
         cmdline_inventory.extend(("--skip-tags", "spark_install,cassandra"))
 
-    cmdline_inventory.extend(["-i", "openstack_inventory.py", "actions/%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
-    subprocess.call(cmdline_inventory, env=env)
+    cmdline_inventory.extend(["%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
+    subprocess.call(cmdline_inventory)
 else:
-    err("unknown action: " + args.action)
+    err("unknown action: " + args.act)

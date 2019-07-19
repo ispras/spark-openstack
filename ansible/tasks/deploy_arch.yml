@@ -3,20 +3,20 @@
 
 - block:
   - name: "get {{deparch_file}} to {{deparch_dest}}"
-    get_url: url={{ deparch_download_url }} dest={{deparch_dest}}/
-    when: "'{{ inventory_hostname }}' == '{{ active_master_inventory_hostname }}'"
+    become: no
+    local_action: get_url url={{ deparch_download_url }} dest={{deparch_dest}}/
 
   - name: distribute {{deparch_file}} among slaves
     synchronize:
       src: "{{deparch_dest}}/{{ deparch_file }}{{deparch_ext}}"
-      dest: "{{deparch_dest}}/{{ deparch_file }}{{deparch_ext}}"
-    delegate_to: "{{ active_master_inventory_hostname }}"
+      dest: "/opt/{{ deparch_file }}{{deparch_ext}}"
+#    delegate_to: "{{ active_master_inventory_hostname }}"
 
   - name: unzip {{deparch_file}}
-    unarchive: copy=no src={{deparch_dest}}/{{ deparch_file }}{{deparch_ext}} dest={{deparch_dest}}
+    unarchive: copy=no src=/opt/{{ deparch_file }}{{deparch_ext}} dest=/opt
 
   - name: create {{deparch_file}} symlink
-    file: src={{deparch_dest}}/{{ deparch_file }} dest={{deparch_dest}}/{{ deparch_link }} state=link
+    file: src=/opt/{{ deparch_file }} dest=/opt/{{ deparch_link }} state=link
 #TODO: delete archive
   become: true
   become_user: root

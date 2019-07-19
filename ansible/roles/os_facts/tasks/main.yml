@@ -1,0 +1,40 @@
+---
+
+- name: Register master facts
+  os_server_facts:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  with_items:
+    - "{{ cluster_name }}_master"
+
+- name: Make up master inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: "{{ cluster_name }}_master"
+    ansible_host: "{{ item.public_v4 }}"
+    ansible_ssh_host: "{{ item.interface_ip }}"
+    ansible_user: "ubuntu"
+    openstack: "{{ item }}"
+  with_items:
+    - "{{ openstack_servers }}"
+
+
+- name: Register slaves facts
+  os_server_facts:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  with_items:
+    - "{{ cluster_name }}_slaves"
+
+- name: Make up slaves inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: "{{ cluster_name }}_slaves"
+    ansible_host: "{{ item.public_v4 }}"
+    ansible_ssh_host: "{{ item.interface_ip }}"
+    ansible_user: "ubuntu"
+    openstack: "{{ item }}"
+  with_items:
+    - "{{ openstack_servers }}"

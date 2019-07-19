@@ -1,0 +1,69 @@
+---
+
+- name: create directory for ssh-keys if doesn't exist
+  local_action: file path="files/keys" state=directory
+  tags: prepare
+
+
+- name: Check if instances really got floating IPs
+  local_action: fail msg="One of the instances didn't get floating IP address"
+  when: hostvars[inventory_hostname].openstack.public_v4 == ''
+#  fail: msg="One of the instances didn't get floating IP address"
+  tags: prepare
+
+- name: Wait for ssh-server to start
+  local_action:
+    module: wait_for
+      host="{{ hostvars[inventory_hostname].openstack.public_v4 }}"
+      port=22
+      search_regex=OpenSSH
+      delay=3
+      timeout=300
+  #    - debug: msg="Checking ssh for {{ hostvars[inventory_hostname].openstack.public_v4 }}"
+  tags: prepare
+
+- name: install Python 2 if missing
+  raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+  delay: 10
+  tags: prepare
+
+- name: generating key for hadoop user
+  user: name={{ hadoop_user }} generate_ssh_key=yes
+  when: inventory_hostname == active_master_inventory_hostname
+  tags: prepare
+
+- name: get the public key
+  fetch: src="/home/{{ hadoop_user }}/.ssh/id_rsa.pub" dest="files/keys/{{ cluster_name }}.pub" flat=yes
+  when: inventory_hostname == active_master_inventory_hostname
+  tags: prepare
+
+- name: get the private key
+  fetch: src="/home/{{ hadoop_user }}/.ssh/id_rsa" dest="files/keys/{{ cluster_name }}" flat=yes
+  when: inventory_hostname == active_master_inventory_hostname
+  tags: prepare
+
+- name: deploy authorized keys
+  become: yes
+  become_user: root
+  authorized_key: user={{ hadoop_user }} key={{ lookup('file', 'files/keys/{{ cluster_name }}.pub') }}
+  tags: prepare
+
+- name: deploy ssh-keys
+  become: yes
+  become_user: root
+  copy: src="files/keys/{{ cluster_name }}" dest="/home/{{ hadoop_user }}/.ssh/{{ cluster_name }}"
+  tags: prepare
+
+- name: distribute ssh config
+  become: yes
+  become_user: root
+  template: src=templates/config.j2 dest="/home/{{ hadoop_user }}/.ssh/config"
+  tags: prepare
+
+- name: modify /etc/hosts
+  become: yes
+  become_user: root
+  lineinfile: dest=/etc/hosts state=present line="{{ hostvars[item].openstack.private_v4}} {{ hostvars[item].openstack.name }}"
+  with_items: "{{ play_hosts }}"
+    #  template: src=templates/hosts.j2 dest=/etc/hosts
+  tags: prepare

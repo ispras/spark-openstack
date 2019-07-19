@@ -1,3 +1,3 @@
-ignite_download_url: "http://archive.apache.org/dist/ignite/{{ignite_version}}/apache-ignite-fabric-{{ignite_version}}-bin.zip"
-ignite_file: "apache-ignite-fabric-{{ignite_version}}-bin"
+ignite_download_url: "http://archive.apache.org/dist/ignite/{{ignite_version}}/apache-ignite-{{ignite_version}}-bin.zip"
+ignite_file: "apache-ignite-{{ignite_version}}-bin"
 ignite_home: "/opt/{{ignite_file}}"

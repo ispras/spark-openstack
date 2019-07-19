@@ -5,6 +5,8 @@
 *.tar.gz
 *.retry
 *.pub
+*.zip
+*.sha512
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -102,3 +104,8 @@ ENV/
 
 #idea
 .idea
+
+packages.txt
+sandbox-openrc.sh
+ansible/files/keys/
+

@@ -3,7 +3,7 @@
 - name: get Hadoop distro checksum
   local_action: get_url url={{ hadoop_checksum_url }} dest=files/
   become: false
-  when: "{{ hadoop_version }} != 'cdh4'"
+  when: "hadoop_version != 'cdh4'"
   tags:
   - install
   - spark_install
@@ -11,7 +11,7 @@
 # it would be reasonable to use sha1 for crossplatform, but Spark doesn't provide sha1 checksum.
 - name: extract Hadoop checksum from file
   set_fact: hadoop_md5="{{ lookup('file', hadoop_arch_checksum) | regex_search('.*MD5.*') | regex_replace('.*MD5 = (.*)', '\\1' ) |  replace(' ', '') }}"
-  when: "{{ hadoop_version }} != 'cdh4'"
+  when: " hadoop_version != 'cdh4'"
   tags:
   - install
   - spark_install
@@ -32,7 +32,7 @@
 
 - debug: var=spark_md5
 
-- include: tasks/prepare_ubuntu.yml
+- include: tasks/prepare_spark.yml
   become: yes
   become_user: root
   when: spark_common_completed is undefined
