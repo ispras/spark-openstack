@@ -9,4 +9,4 @@
           metadata:
             group: "{{ cluster_name }}_master"
       no_log: True
-    - debug: msg="{{ openstack_servers[0].interface_ip }}"
+    - debug: msg="{{ openstack_servers[0].interface_ip if openstack_servers[0].interface_ip != '' else openstack_servers[0].private_v4 }}"
