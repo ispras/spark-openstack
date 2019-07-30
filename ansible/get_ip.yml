@@ -7,6 +7,6 @@
       os_server_facts:
         filters:
           metadata:
-            group: "{{ cluster_name }}_master"
+            group: "{{ cluster_name }}_{{ extended_role }}"
       no_log: True
     - debug: msg="{{ openstack_servers[0].interface_ip if openstack_servers[0].interface_ip != '' else openstack_servers[0].private_v4 }}"

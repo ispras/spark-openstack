@@ -59,7 +59,7 @@ parser = argparse.ArgumentParser(description='Spark cluster deploy tools for Ope
                                         'Apache 2.0, ISP RAS 2016 (http://ispras.ru/en).\n')
 
 parser.add_argument('act', type=str,
-                    choices=["launch", "destroy", "get-master", "config"])
+                    choices=["launch", "destroy", "get-master", "config", "runner"])
 parser.add_argument('cluster_name', help="Name for your cluster")
 parser.add_argument('option', nargs='?')
 parser.add_argument('-k', '--key-pair')
@@ -307,9 +307,19 @@ def parse_host_ip(resp):
     return parts3[1]
 
 def get_master_ip():
+    vars = make_extra_vars()
+    vars['extended_role'] = 'master'
     res = subprocess.check_output([ansible_playbook_cmd,
-                                   "--extra-vars", repr(make_extra_vars()),
-                                   "get_master.yml"])
+                                   "--extra-vars", repr(vars),
+                                   "get_ip.yml"])
+    return parse_host_ip(res)
+
+def get_ip(role):
+    vars = make_extra_vars()
+    vars['extended_role'] = role
+    res = subprocess.check_output([ansible_playbook_cmd,
+                                   "--extra-vars", repr(vars),
+                                   "get_ip.yml"])
     return parse_host_ip(res)
 
 def ssh_output(host, cmd):
@@ -411,5 +421,11 @@ elif args.act == "config":
 
     cmdline_inventory.extend(["%s.yml" % args.option, "--extra-vars", repr(extra_vars)])
     subprocess.call(cmdline_inventory)
+elif args.act == "runner":
+    cmdline_create = cmdline[:]
+    cmdline_create.extend(["prepare_internal_runner.yml", "--extra-vars",  repr(extra_vars)])
+    subprocess.call(cmdline_create)
+    runner_ip = get_ip('runner')
+    print("Runner ready; IP is %s"%(runner_ip))
 else:
     err("unknown action: " + args.act)
