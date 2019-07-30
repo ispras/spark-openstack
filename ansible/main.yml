@@ -7,6 +7,7 @@
       when: create_cluster is defined or act == "destroy"
     - include_role:
         name: os_facts
+      when: act != "destroy"
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   tasks:
@@ -35,11 +36,13 @@
       include_role:
         name: cassandra
       when: deploy_cassandra
-    - name: install ignite
+    - name: prepare ignite
       include_role:
-        name:
-          - ignite_prapare
-          - ignite_config
+        name: ignite_prepare
+      when: deploy_ignite
+    - name: config ignite
+      include_role:
+        name: ignite_config
       when: deploy_ignite
     - name: mountnfs
       include_role:
