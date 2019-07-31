@@ -19,7 +19,6 @@
     async: 300
     poll: 0
     register: master_waitress
-    when: floating_ip_pool != "None"
 
   - name: Create slave instances
     os_server:
