@@ -90,6 +90,7 @@
         executable: pip
 
     - name: clone spark-openstack project
+      become: no
       git:
         repo: "https://github.com/ispras/spark-openstack.git"
         dest: "/home/ubuntu/spark-openstack/"
