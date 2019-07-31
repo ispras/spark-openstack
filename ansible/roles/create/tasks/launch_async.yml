@@ -3,7 +3,7 @@
   - name: initialize security group
     include: create_security_group.yml
 
-  - name: Create master instance
+  - name: Create master instance with ip pool
     os_server:
       state: present
       name: "{{ cluster_name }}-master"
@@ -19,6 +19,7 @@
     async: 300
     poll: 0
     register: master_waitress
+    when: floating_ip_pool != "None"
 
   - name: Create slave instances
     os_server:
@@ -67,6 +68,7 @@
     async: 60
     poll: 0
     register: master_ip_waitress
+    when: floating_ip_pool != 'None'
 
   - name: 'Acquiring floating IPs for slave instances'
     os_floating_ip:
@@ -82,6 +84,7 @@
     async: 60
     poll: 0
     register: slave_ip_waitress
+    when: floating_ip_pool != 'None'
 
   - name: 'Waiting for IP'
     async_status: jid={{ master_ip_waitress.ansible_job_id }}
@@ -89,6 +92,7 @@
     until: mstr.finished
     retries: 60
     delay: 1
+    when: floating_ip_pool != 'None'
 
   - name: 'Waiting for IP'
     async_status: jid={{ item.ansible_job_id }}
@@ -97,4 +101,5 @@
     retries: 60
     delay: 1
     with_items: "{{ slave_ip_waitress.results }}"
+    when: floating_ip_pool != 'None'
 
