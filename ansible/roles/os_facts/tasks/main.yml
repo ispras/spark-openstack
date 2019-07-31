@@ -12,12 +12,14 @@
   add_host:
     name: "{{ item.name }}"
     groups: "{{ cluster_name }}_master"
-    ansible_host: "{{ item.public_v4 }}"
-    ansible_ssh_host: "{{ item.interface_ip }}"
+    ansible_host: "{{ item.public_v4  if item.public_v4 != '' else item.private_v4 }}"
+    ansible_ssh_host: "{{ item.interface_ip if item.interface_ip != '' else item.private_v4 }}"
     ansible_user: "ubuntu"
     openstack: "{{ item }}"
   with_items:
     - "{{ openstack_servers }}"
+
+- debug: var=openstack
 
 
 - name: Register slaves facts
@@ -32,8 +34,8 @@
   add_host:
     name: "{{ item.name }}"
     groups: "{{ cluster_name }}_slaves"
-    ansible_host: "{{ item.public_v4 }}"
-    ansible_ssh_host: "{{ item.interface_ip }}"
+    ansible_host: "{{ item.public_v4  if item.public_v4 != '' else item.private_v4 }}"
+    ansible_ssh_host: "{{ item.interface_ip if item.interface_ip != '' else item.private_v4 }}"
     ansible_user: "ubuntu"
     openstack: "{{ item }}"
   with_items:

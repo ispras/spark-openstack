@@ -315,6 +315,28 @@ Supported actions:
 * `restart-spark` - restarts Apache Spark
 * `restart-cassandra` - restarts Apache Cassandra
 
+Configuring cluster without Floating IPs
+========================================
+
+The ability to create a cluster without floating ip is supported.
+Since to launch ansible, an ssh connection is required, to work in this case, a VM must be created inside the cloud. This can be done using the command:
+
+    ./spark-openstack -k <key-pair-name> -i <private-key> -t <instance-type> \
+        -a <os-image-id> -n <virtual-network-id> -f <floating-ip-pool> \
+        runner <name>
+        
+After that, a VM wil be created with the necessary pre-installed packages and this project for further work.
+You should copy your <project-name>-openrc.sh file and ssh key to it.
+
+When you connect to this VM, you can create clusters from it without specifying floating IPs:
+
+    ./spark-openstack --create -k <key-pair-name> -i <private-key> -s <n-slaves> \
+        -t <instance-type> -a <os-image-id> -n <virtual-network-id> \
+        launch <cluster-name>
+        
+Note that created cluster will be unavailable outside the cloud - for this you need manually configure the floating IP.
+
+The VM created for running this cluster creating method can be destroyed as usual. 
 
 ## Important notes
 
@@ -325,9 +347,11 @@ Supported actions:
 * All unknown arguments are passed to `ansible-playbook`
 ## Tested configurations
 
-Ansible: 2.0.2 and higher.
+Ansible: 2.8.2 and higher.
 
 Python: 2.7.* (3.x should work as soon as Ansible Openstack modules would be fixed)
+
+Python Openstack SDK: 0.31.0
 
 Management machine OS: Mac OS X Yosemite, Linux Mint 17, Kubuntu 14.04, Windows+Cygwin
 

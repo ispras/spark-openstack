@@ -5,7 +5,7 @@
 
 - name: debug
   set_fact: alive_servers="{{ alive_servers | default([]) | union([item.name]) }}"
-  when: item['metadata']['group'] is defined and (cluster_name + '_master' == item['metadata']['group'] or cluster_name + '_slaves' == item['metadata']['group'])
+  when: item['metadata']['group'] is defined and (cluster_name + '_master' == item['metadata']['group'] or cluster_name + '_slaves' == item['metadata']['group'] or cluster_name + '_runner' == item['metadata']['group'])
   with_items: "{{ openstack_servers }}"
   no_log: True
 
