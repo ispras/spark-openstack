@@ -76,7 +76,7 @@
 
     - name: use actual ansible repo
       apt_repository:
-        name: ppa:ansible/ansible
+        repo: ppa:ansible/ansible
         
     - name: install ansible
       apt:
