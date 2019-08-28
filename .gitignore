@@ -7,6 +7,7 @@
 *.pub
 *.zip
 *.sha512
+*.deb
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
