@@ -1,0 +1,3 @@
+es_deb_url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.1.1-amd64.deb"
+es_deb_file: "elasticsearch-oss-7.1.1-amd64.deb"
+es_config_file: "/etc/elasticsearch/elasticsearch.yml"

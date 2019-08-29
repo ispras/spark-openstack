@@ -1,0 +1,64 @@
+---
+- include: install.yml
+  when: not restart|default(False)
+  tags:
+  - install
+  - elastic
+  - elastic_install
+
+- include: config.yml
+  when: not restart|default(False)
+  tags:
+    - install
+    - elastic
+    - elastic_install
+
+- include: start.yml
+  when: not restart|default(False)
+  tags:
+    - start
+    - elastic
+    - elastic_start
+
+
+- include: restart.yml
+  when: restart|default(False)
+  tags:
+  - restart
+  - elastic_restart
+  - 
+- set_fact:
+    elastic_completed: true
+
+
+#- include: config.yml
+#  tags:
+#    - install
+#    - elastic
+#    - elastic_install
+#    - elastic_config
+
+#
+#- include: plugins.yml
+#  tags:
+#    - install
+#    - elastic
+#    - elastic_install
+#    - elastic_plugins
+
+#- include: start.yml
+#  when: not restart|default(False)
+#  tags:
+#  - start
+#  - elastic
+#  - elastic_start
+#  - set_fact:
+#    elastic_completed: true
+
+#- include: restart.yml
+#  when: restart|default(False)
+#  tags:
+#  - restart
+#  - elastic_restart
+#- set_fact:
+#    elastic_completed: true

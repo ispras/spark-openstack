@@ -1,0 +1,40 @@
+---
+
+- name: Add Java 11 repo
+  apt_repository:
+    repo: "ppa:openjdk-r/ppa"
+    state: present
+
+- name: Install Java 11
+  apt:
+    name: openjdk-11-jdk
+    update_cache: yes
+
+- name: Add signing keys for repositories
+  apt_key:
+    url: "https://d3g5vo6xdbdb9a.cloudfront.net/GPG-KEY-opendistroforelasticsearch"
+    state: present
+
+- name: Add repository
+  apt_repository:
+    repo: "deb https://d3g5vo6xdbdb9a.cloudfront.net/apt stable main"
+    state: present
+
+- name: Get ElasticSearch OSS deb
+  become: no
+  local_action: get_url url={{ es_deb_url }} dest=files/
+
+- name: distribute ElasticSearch deb
+  synchronize:
+    src: "files/{{ es_deb_file }}"
+    dest: "/home/{{ hadoop_user }}"
+#  delegate_to: "{{ active_master_inventory_hostname }}"
+
+- name: Install ElasticSearch OSS
+  apt:
+    deb: "/home/{{ hadoop_user }}/{{ es_deb_file }}"
+
+- name: Install Open Distro for ElasticSearch
+  apt:
+    update_cache: yes
+    name: opendistroforelasticsearch

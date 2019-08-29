@@ -1,0 +1,41 @@
+---
+
+- name: Set cluster name
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "cluster.name: {{ es_instance_name }}"
+
+- name: Set initial master
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "cluster.initial_master_nodes: {{ es_config.cluster.initial_master_nodes }}"
+
+- name: Set network
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "network.host: {{ es_config.network.host }}"
+
+- name: Set master
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "node.master: {{ es_config.node.master }}"
+
+
+- name: Set http port
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "http.port: {{ es_config.http.port }}"
+
+
+- name: Set transport port
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "transport.port: {{ es_config.transport.port }}"
+
+- name: Set seed hosts
+  lineinfile:
+    dest: "{{ es_config_file }}"
+    line: "discovery.seed_hosts: {{ es_config.discovery.seed_hosts }}"
+
+- name: system config for ElasticSearch
+  shell: "sysctl -w vm.max_map_count=262144"
