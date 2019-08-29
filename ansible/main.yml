@@ -4,10 +4,12 @@
   tasks:
     - include_role:
         name: create
-      when: create_cluster is defined or act == "destroy"
+      when: create_cluster is defined and create_cluster == true or act == "destroy"
     - include_role:
         name: os_facts
       when: act != "destroy"
+
+    - debug: var=create_cluster
 
 - hosts: "{{ cluster_name }}_master:{{ cluster_name }}_slaves"
   tasks:
@@ -15,7 +17,7 @@
         name: deploy_ssh
       vars:
         hadoop_user: ubuntu
-      when: create_cluster is defined
+      when: create_cluster is defined and create_cluster == true
     - include_role:
             name: cpus
     - include_role:
@@ -28,6 +30,7 @@
     - name: install base
       include_role:
         name: basic
+      when: create_cluster is defined and create_cluster == true
     - name: install Spark
       include_role:
         name: spark_common
@@ -93,6 +96,7 @@
         es_version_lock: false
         es_plugins:
           plugin: ingest-geoip
+
       when: deploy_elastic
 
 - hosts: "{{ cluster_name }}_slaves"
@@ -119,4 +123,5 @@
         es_api_port: 9200
         es_plugins:
           plugin: ingest-geoip
+
       when: deploy_elastic
