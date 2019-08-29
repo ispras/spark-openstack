@@ -274,30 +274,24 @@ Usage example:
 
 ## ElasticSearch
 
-You may want to deploy ElasticSearch to the cluster. This is done via official ElasticSearch ansible role which is included as a git submodule.
+You may want to deploy ElasticSearch to the cluster. Implemented a role for installing ElasticSearch 7.1.1 with Open Distro. 
 
-First, init/or update Git submodules:
-`git submodule init` or `git submodule update`
-
-Then, you will be able to deploy ElasticSearch by providing:
+You may deploy ElasticSearch by providing:
 
     --deploy-elastic
-
-Latest ElasticSearch version (5.x) is deployed.
-
-You may want to change ElasticSearch heap size. You can do so by specifying
-
-    --es-heap-size <desized size>
-
-Default heap size is `1g` (1 GB)
-
+    
+Now deployed ES cluster with default configuration for [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/docs/install/deb/). 
 
 Usage example:
 
-    ./spark-openstack --create -k borisenko -i /home/al/.ssh/id_rsa -s 10 \
+    ./spark-openstack --create -k key_name -i /home/al/.ssh/id_rsa -s 5 \
                -t spark.large -a 8ac6a0eb-05c6-40a7-aeb7-551cb87986a2 -n abef0ea-4531-41b9-cba1-442ba1245632 -f public \
                --deploy-elastic\
-               launch borisenko-cluster
+               launch elastic-cluster
+               
+After executing this command, will be created a ES cluster with 1 master and 5 slaves. You may check cluster with:
+
+    curl -XGET https://localhost:9200/_cat/nodes?v -u admin:admin --insecure
 
 Additional actions
 ==================
