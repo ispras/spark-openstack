@@ -1,0 +1,6 @@
+---
+
+- name: start ElasticSearch
+  systemd:
+    state: started
+    name: "elasticsearch.service"

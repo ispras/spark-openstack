@@ -1,0 +1,21 @@
+---
+
+- name: Open Distro sequrity plugin
+  shell: "{{ es_home }}/bin/elasticsearch-plugin install {{ od_seq_url }}"
+  become: True
+  when: od_seq
+
+- name: Open Distro alerting plugin
+  shell: "{{ es_home }}/bin/elasticsearch-plugin install {{ od_al_url }}"
+  become: True
+  when: od_al
+
+- name: Open Distro SQL plugin
+  shell: "{{ es_home }}/bin/elasticsearch-plugin install {{ od_sql_url }}"
+  become: True
+  when: od_sql
+
+- name: Open Distro performance analyzer plugin
+  shell: "{{ es_home }}/bin/elasticsearch-plugin install {{ od_pa_url }}"
+  become: True
+  when: od_pa
