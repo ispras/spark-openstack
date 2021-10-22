@@ -3,7 +3,7 @@
   set_fact:
     "spark_worker_mem_mb={{ ansible_memtotal_mb - 15 * 1024 if ansible_memtotal_mb > 100 * 1024
                   else ansible_memtotal_mb - 10 * 1024 if ansible_memtotal_mb > 60 * 1024
-                  else ansible_memtotal_mb - 6 * 1024 if else if ansible_memtotal_mb > 40 * 1024
+                  else ansible_memtotal_mb - 6 * 1024 if ansible_memtotal_mb > 40 * 1024
                   else ansible_memtotal_mb - 3 * 1024 if ansible_memtotal_mb > 20 * 1024
                   else ansible_memtotal_mb - 2 * 1024 if ansible_memtotal_mb > 10 * 1024
                   else ansible_memtotal_mb - 1300 if ansible_memtotal_mb - 1300 > 512
